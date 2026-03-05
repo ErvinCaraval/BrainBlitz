@@ -1,0 +1,7 @@
+Flask==2.3.3
+Flask-CORS==4.0.0
+Flask-Limiter==3.5.0
+# Note: heavy deps (tensorflow, opencv) are provided by the base image `serengil/deepface:latest`
+protobuf==3.20.3
+redis==6.1.1
+psutil==5.9.6

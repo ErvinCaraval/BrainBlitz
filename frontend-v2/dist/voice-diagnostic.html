@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico de Voz - BrainBlitz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .status {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico Completo de Voz - BrainBlitz</h1>
+    
+    <div class="container">
+        <h2>📊 Información del Sistema</h2>
+        <div id="systemInfo" class="status">
+            Cargando información del sistema...
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎤 Pruebas de Voz</h2>
+        <button onclick="runDiagnostic()" id="diagnosticBtn">🔍 Ejecutar Diagnóstico</button>
+        <button onclick="testBasicVoice()" id="testBtn">🔊 Probar Voz Básica</button>
+        <button onclick="testSpanishVoice()" id="spanishBtn">🇪🇸 Probar Voz Española</button>
+        <button onclick="clearLog()" id="clearBtn">🗑️ Limpiar Log</button>
+    </div>
+
+    <div class="container">
+        <h2>📝 Log de Diagnóstico</h2>
+        <div id="logOutput" class="log">
+            Esperando diagnóstico...
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Solución de Problemas</h2>
+        <div class="status">
+            <h3>Si no escuchas nada:</h3>
+            <ul>
+                <li>Verifica que el volumen del sistema esté activado</li>
+                <li>Asegúrate de que no hay bloqueos de audio en el navegador</li>
+                <li>Prueba con un navegador diferente (Chrome funciona mejor)</li>
+                <li>Verifica que no hay extensiones bloqueando el audio</li>
+                <li>Revisa la consola del navegador (F12) para errores</li>
+            </ul>
+            
+            <h3>Si hay errores:</h3>
+            <ul>
+                <li>Actualiza tu navegador a la última versión</li>
+                <li>Reinicia el navegador</li>
+                <li>Verifica que JavaScript esté habilitado</li>
+                <li>Prueba en modo incógnito</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let logMessages = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const typeClass = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
+            const logEntry = `[${timestamp}] ${message}`;
+            logMessages.push(logEntry);
+            
+            const logOutput = document.getElementById('logOutput');
+            logOutput.innerHTML = logMessages.join('\n');
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            console.log(message);
+        }
+
+        function clearLog() {
+            logMessages = [];
+            document.getElementById('logOutput').innerHTML = 'Log limpiado...';
+        }
+
+        function updateSystemInfo() {
+            const isSupported = 'speechSynthesis' in window;
+            const isSpeaking = speechSynthesis.speaking;
+            const isPaused = speechSynthesis.paused;
+            const voices = speechSynthesis.getVoices();
+            const spanishVoices = voices.filter(v => v.lang.includes('es'));
+
+            document.getElementById('systemInfo').innerHTML = `
+                <strong>Soporte de Web Speech API:</strong> ${isSupported ? '✅ Sí' : '❌ No'}<br>
+                <strong>Estado actual:</strong> ${isSpeaking ? '🔊 Hablando' : isPaused ? '⏸️ Pausado' : '🔇 Silencioso'}<br>
+                <strong>Voces disponibles:</strong> ${voices.length}<br>
+                <strong>Voces en español:</strong> ${spanishVoices.length}<br>
+                <strong>Navegador:</strong> ${navigator.userAgent.split(' ')[0]}<br>
+                <strong>Plataforma:</strong> ${navigator.platform}<br>
+                <strong>Idioma:</strong> ${navigator.language}
+            `;
+        }
+
+        function runDiagnostic() {
+            log('🔍 Iniciando diagnóstico completo del sistema de voz...', 'info');
+            
+            // 1. Verificar soporte del navegador
+            log('📊 1. VERIFICACIÓN DEL NAVEGADOR:', 'info');
+            log(`User Agent: ${navigator.userAgent}`, 'info');
+            log(`Plataforma: ${navigator.platform}`, 'info');
+            log(`Idioma: ${navigator.language}`, 'info');
+
+            // 2. Verificar APIs de voz
+            log('🎤 2. VERIFICACIÓN DE APIs DE VOZ:', 'info');
+            const speechSynthesisSupported = 'speechSynthesis' in window;
+            const speechSynthesisUtteranceSupported = 'SpeechSynthesisUtterance' in window;
+            
+            log(`speechSynthesis disponible: ${speechSynthesisSupported ? '✅' : '❌'}`, speechSynthesisSupported ? 'success' : 'error');
+            log(`SpeechSynthesisUtterance disponible: ${speechSynthesisUtteranceSupported ? '✅' : '❌'}`, speechSynthesisUtteranceSupported ? 'success' : 'error');
+
+            if (speechSynthesisSupported) {
+                log(`Estado actual: Hablando=${speechSynthesis.speaking}, Pausado=${speechSynthesis.paused}, Pendiente=${speechSynthesis.pending}`, 'info');
+            }
+
+            // 3. Verificar voces disponibles
+            log('🗣️ 3. VERIFICACIÓN DE VOCES:', 'info');
+            if (speechSynthesisSupported) {
+                const voices = speechSynthesis.getVoices();
+                log(`Total de voces: ${voices.length}`, voices.length > 0 ? 'success' : 'warning');
+                
+                if (voices.length > 0) {
+                    log('Voces disponibles:', 'info');
+                    voices.forEach((voice, index) => {
+                        const voiceInfo = `${index + 1}. ${voice.name} (${voice.lang}) ${voice.gender ? `[${voice.gender}]` : ''} ${voice.default ? '[Por defecto]' : ''}`;
+                        log(voiceInfo, 'info');
+                    });
+                    
+                    const spanishVoices = voices.filter(v => v.lang.includes('es'));
+                    log(`Voces en español: ${spanishVoices.length}`, spanishVoices.length > 0 ? 'success' : 'warning');
+                    
+                    if (spanishVoices.length > 0) {
+                        log('Voces españolas:', 'info');
+                        spanishVoices.forEach(voice => {
+                            log(`  - ${voice.name} (${voice.lang})`, 'info');
+                        });
+                    }
+                } else {
+                    log('❌ No hay voces disponibles', 'error');
+                }
+            } else {
+                log('❌ speechSynthesis no está disponible', 'error');
+            }
+
+            // 4. Verificar permisos de audio
+            log('🔊 4. VERIFICACIÓN DE PERMISOS DE AUDIO:', 'info');
+            const audioContextSupported = 'AudioContext' in window || 'webkitAudioContext' in window;
+            const mediaDevicesSupported = 'mediaDevices' in navigator;
+            const getUserMediaSupported = 'getUserMedia' in navigator.mediaDevices;
+            
+            log(`AudioContext disponible: ${audioContextSupported ? '✅' : '❌'}`, audioContextSupported ? 'success' : 'error');
+            log(`MediaDevices disponible: ${mediaDevicesSupported ? '✅' : '❌'}`, mediaDevicesSupported ? 'success' : 'error');
+            log(`getUserMedia disponible: ${getUserMediaSupported ? '✅' : '❌'}`, getUserMediaSupported ? 'success' : 'error');
+
+            updateSystemInfo();
+            log('✅ Diagnóstico completado', 'success');
+        }
+
+        function testBasicVoice() {
+            log('🧪 Probando voz básica...', 'info');
+            
+            if (!('speechSynthesis' in window)) {
+                log('❌ No se puede probar: speechSynthesis no disponible', 'error');
+                return;
+            }
+            
+            const testText = "Prueba de diagnóstico de voz";
+            log(`Probando con texto: "${testText}"`, 'info');
+            
+            const utterance = new SpeechSynthesisUtterance(testText);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.0;
+            utterance.volume = 1.0;
+            utterance.pitch = 1.0;
+            
+            utterance.onstart = function() {
+                log('✅ Voz iniciada correctamente', 'success');
+            };
+            
+            utterance.onend = function() {
+                log('✅ Voz terminada correctamente', 'success');
+            };
+            
+            utterance.onerror = function(event) {
+                log(`❌ Error en la voz: ${event.error}`, 'error');
+            };
+            
+            log('Iniciando síntesis de voz...', 'info');
+            speechSynthesis.speak(utterance);
+        }
+
+        function testSpanishVoice() {
+            log('🇪🇸 Probando con voz española...', 'info');
+            
+            const voices = speechSynthesis.getVoices();
+            const spanishVoices = voices.filter(v => v.lang.includes('es'));
+            
+            if (spanishVoices.length === 0) {
+                log('❌ No hay voces en español disponibles', 'error');
+                return;
+            }
+            
+            const testText = "Prueba con voz en español";
+            log(`Probando con voz: ${spanishVoices[0].name}`, 'info');
+            log(`Texto: "${testText}"`, 'info');
+            
+            const utterance = new SpeechSynthesisUtterance(testText);
+            utterance.voice = spanishVoices[0];
+            utterance.lang = 'es-ES';
+            
+            utterance.onstart = function() {
+                log('✅ Voz española iniciada', 'success');
+            };
+            
+            utterance.onend = function() {
+                log('✅ Voz española terminada', 'success');
+            };
+            
+            utterance.onerror = function(event) {
+                log(`❌ Error con voz española: ${event.error}`, 'error');
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Página de diagnóstico cargada', 'info');
+            updateSystemInfo();
+            
+            // Cargar voces cuando estén disponibles
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = function() {
+                    log('Voces actualizadas', 'info');
+                    updateSystemInfo();
+                };
+            }
+            
+            // Actualizar información cada 2 segundos
+            setInterval(updateSystemInfo, 2000);
+        });
+    </script>
+</body>
+</html>

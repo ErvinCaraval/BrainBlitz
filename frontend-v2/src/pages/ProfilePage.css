@@ -1,0 +1,41 @@
+/* Profile Page - Modern and responsive styles */
+/* Note: Most styles are now handled by Tailwind CSS classes in the JSX */
+
+/* Custom loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Focus ring offset for dark backgrounds */
+.focus\:ring-offset-gray-900:focus {
+  --tw-ring-offset-color: #111827;
+}
+
+/* Smooth transitions for interactive elements */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Enhanced hover effects for statistics cards */
+.group:hover .group-hover\:text-blue-100 {
+  color: rgb(219 234 254);
+}
+
+.group:hover .group-hover\:text-green-100 {
+  color: rgb(220 252 231);
+}
+
+.group:hover .group-hover\:text-purple-100 {
+  color: rgb(237 233 254);
+}

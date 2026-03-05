@@ -1,0 +1,2 @@
+import{u as i,j as t,N as r}from"./index-B7SNj0r6.js";function n({children:a,adminOnly:o}){const{user:e,loading:u}=i();return u?null:e?!e.displayName&&window.location.pathname!=="/complete-profile"?t.jsx(r,{to:"/complete-profile",replace:!0}):o&&e.email!=="admin@example.com"?t.jsx(r,{to:"/dashboard",replace:!0}):a:t.jsx(r,{to:"/",replace:!0})}export{n as default};
+//# sourceMappingURL=ProtectedRoute-Bv8plWUd.js.map

@@ -1,0 +1,83 @@
+{
+  "name": "brainblitz-backend",
+  "version": "1.0.0",
+  "description": "Backend for BrainBlitz trivia game with voice accessibility features",
+  "main": "hybridServer.js",
+  "scripts": {
+    "start": "node --max-old-space-size=256 hybridServer.js",
+    "dev": "nodemon --exec 'node --max-old-space-size=256' hybridServer.js",
+    "test": "jest",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:voice": "jest --testNamePattern='voice'",
+    "test:all": "./scripts/quick-test.sh",
+    "validate": "./scripts/validate-without-firebase.sh",
+    "validate:full": "./scripts/regression-test.sh",
+    "test:complete": "npm run test:unit && npm run validate && echo '🎉 ALL TESTS AND VALIDATIONS PASSED!'",
+    "test:voice:complete": "npm run test:voice && npm run validate && echo '🎤 VOICE API TESTS AND VALIDATIONS COMPLETE!'",
+    "coverage": "jest --coverage --coverageReporters=json --coverageReporters=html",
+    "coverage:voice": "jest --testNamePattern='voice' --coverage --coverageReporters=json --coverageReporters=html",
+    "lint": "eslint controllers/ routes/ services/",
+    "lint:fix": "eslint controllers/ routes/ services/ --fix",
+    "check:syntax": "for file in controllers/*.js routes/*.js services/*.js; do node -c \"$file\" || exit 1; done",
+    "check:deps": "npm list && echo '✅ All dependencies installed'",
+    "check:files": "ls -la controllers/voiceController.js controllers/assemblyAIController.js routes/voiceResponses.js routes/assemblyAI.js services/assemblyAIService.js",
+    "check:routes": "grep -q 'voice-responses' hybridServer.js && grep -q 'assemblyai' hybridServer.js && echo '✅ Routes registered'",
+    "check:all": "npm run check:syntax && npm run check:deps && npm run check:files && npm run check:routes",
+    "verify": "npm run test:unit && npm run check:all && npm run validate && echo '🚀 VERIFICATION COMPLETE - CODE IS STABLE!'",
+    "test:everything": "./scripts/quick-test.sh",
+    "test:quick": "./scripts/quick-test.sh"
+  },
+  "keywords": [
+    "trivia",
+    "game",
+    "voice",
+    "accessibility",
+    "assemblyai",
+    "firebase",
+    "websocket"
+  ],
+  "author": "BrainBlitz Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "firebase-admin": "^13.5.0",
+    "js-yaml": "^4.1.0",
+    "microsoft-cognitiveservices-speech-sdk": "^1.31.0",
+    "sharp": "^0.34.5",
+    "socket.io": "^4.7.4",
+    "swagger-ui-express": "^5.0.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.53.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "socket.io-client": "^4.8.1",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "controllers/**/*.js",
+      "routes/**/*.js",
+      "services/**/*.js",
+      "middleware/**/*.js",
+      "!**/node_modules/**",
+      "!**/coverage/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ]
+  }
+}

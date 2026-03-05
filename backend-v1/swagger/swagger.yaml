@@ -1,0 +1,2612 @@
+
+openapi: 3.0.0
+info:
+  title: BrainBlitz API - Documentación Completa
+  version: 2.0.0
+  description: |
+    API Backend de **BrainBlitz**, el juego de trivia multijugador con accesibilidad de voz integrada.  
+    Aquí encontrarás todos los endpoints REST disponibles, sus parámetros, ejemplos de uso y descripciones completas.
+
+    **Características principales:**
+    - ✅ Autenticación con Firebase Auth
+    - ✅ Modo accesibilidad con voz (Voice-to-Text y Text-to-Speech)
+    - ✅ Reconocimiento facial para login
+    - ✅ Generación de preguntas con IA (OpenAI)
+    - ✅ OCR para escanear imágenes
+    - ✅ Procesamiento de audio con AssemblyAI
+    - ✅ Rate limiting y protección contra abuso
+    - ✅ Estadísticas en tiempo real
+
+    **Notas importantes:**
+    - Todas las respuestas están en formato JSON.
+    - Algunos endpoints requieren autenticación mediante Bearer Token (Firebase JWT).
+    - Puedes probar todos los endpoints desde `/api-docs` en el servidor en ejecución.
+
+    ---
+    ## URLs de Despliegue
+    
+    ### 🌐 Producción
+    - **Frontend:** [https://frontend-v2-latest.onrender.com](https://frontend-v2-latest.onrender.com)
+    - **Backend API:** [https://backend-v1-latest.onrender.com](https://backend-v1-latest.onrender.com)
+    - **Documentación Swagger:** [https://backend-v1-latest.onrender.com/api-docs](https://backend-v1-latest.onrender.com/api-docs)
+
+    ### 💻 Desarrollo Local
+    - **Backend:** http://localhost:5000
+    - **Frontend:** http://localhost:3000 (o http://localhost:5173)
+    - **Facial Service:** http://localhost:5001
+
+    ---
+    ## Ejemplo de uso
+
+    **Registrar usuario:**
+    ```bash
+    curl -X POST https://backend-v1-latest.onrender.com/api/users/register \
+      -H "Content-Type: application/json" \
+      -d '{"email":"test@correo.com","password":"123456","displayName":"Test"}'
+    ```
+
+    **Generar preguntas con IA:**
+    ```bash
+    curl -X POST https://backend-v1-latest.onrender.com/api/ai/generate-questions \
+      -H "Authorization: Bearer <TOKEN>" \
+      -H "Content-Type: application/json" \
+      -d '{"topic":"ciencia","difficulty":"medium","count":5,"useAI":true}'
+    ```
+
+servers:
+  - url: https://backend-v1-latest.onrender.com
+    description: 🌐 Entorno de Producción (Render)
+  - url: http://localhost:5000
+    description: 💻 Entorno Local
+
+tags:
+  - name: Users
+    description: Registro, autenticación y estadísticas de usuario.
+  - name: Games
+    description: Gestión de partidas multijugador.
+  - name: Questions
+    description: Gestión y consulta de preguntas de trivia.
+  - name: AI
+    description: Generación de preguntas con inteligencia artificial.
+  - name: VoiceInteractions
+    description: Gestión de interacciones de voz y modo de accesibilidad.
+  - name: VoiceResponses
+    description: Procesamiento y validación de respuestas por voz.
+  - name: AdminAccessibility
+    description: Controles administrativos para funcionalidades de accesibilidad.
+  - name: TTS
+    description: Endpoints de Text-to-Speech y gestión de voces (Azure/AssemblyAI).
+  - name: AssemblyAI
+    description: Endpoints para integración directa con AssemblyAI (STT/TTS/Procesamiento).
+  - name: FacialRecognition
+    description: Endpoints para registro y login facial (reconocimiento biométrico).
+  - name: OCR
+    description: Endpoints para reconocimiento óptico de caracteres (OCR).
+  - name: Vision
+    description: Endpoints de visión por computadora (OCR, Análisis de Imagen, Detección de Objetos).
+
+paths:
+
+  /api/admin/accessibility:
+    get:
+      tags: [AdminAccessibility]
+      summary: Obtener configuración de accesibilidad del usuario autenticado
+      description: |
+        Devuelve la configuración de accesibilidad del usuario autenticado.
+        **Requiere autenticación Firebase.**
+        
+        ### Ejemplo de uso
+        **Local:**
+        ```bash
+        curl -X GET http://localhost:5000/api/admin/accessibility -H "Authorization: Bearer <TOKEN>"
+        ```
+        **Producción:**
+        ```bash
+        curl -X GET https://backend-v1-latest.onrender.com/api/admin/accessibility -H "Authorization: Bearer <TOKEN>"
+        ```
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Configuración de accesibilidad del usuario.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visualDifficulty:
+                    type: boolean
+                    example: false
+                  stats:
+                    type: object
+                  email:
+                    type: string
+                    example: "usuario@ejemplo.com"
+                  displayName:
+                    type: string
+                    example: "Usuario Ejemplo"
+              example:
+                visualDifficulty: false
+                stats: { gamesPlayed: 10, wins: 2, correctAnswers: 30 }
+                email: "usuario@ejemplo.com"
+                displayName: "Usuario Ejemplo"
+        401:
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No autenticado"
+        404:
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Usuario no encontrado"
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+
+    put:
+      tags: [AdminAccessibility]
+      summary: Actualizar configuración de accesibilidad del usuario autenticado
+      description: |
+        Actualiza la preferencia de accesibilidad visual del usuario autenticado.
+        **Requiere autenticación Firebase.**
+        
+        ### Ejemplo de uso
+        **Local:**
+        ```bash
+        curl -X PUT http://localhost:5000/api/admin/accessibility \
+          -H "Authorization: Bearer <TOKEN>" \
+          -H "Content-Type: application/json" \
+          -d '{"visualDifficulty": true}'
+        ```
+        **Producción:**
+        ```bash
+        curl -X PUT https://backend-v1-latest.onrender.com/api/admin/accessibility \
+          -H "Authorization: Bearer <TOKEN>" \
+          -H "Content-Type: application/json" \
+          -d '{"visualDifficulty": true}'
+        ```
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visualDifficulty:
+                  type: boolean
+                  description: "Indica si el usuario tiene dificultades visuales."
+                  example: true
+            example:
+              visualDifficulty: true
+      responses:
+        200:
+          description: Configuración actualizada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  visualDifficulty:
+                    type: boolean
+                    example: true
+                  email:
+                    type: string
+                    example: "usuario@ejemplo.com"
+                  displayName:
+                    type: string
+                    example: "Usuario Ejemplo"
+              example:
+                visualDifficulty: true
+                email: "usuario@ejemplo.com"
+                displayName: "Usuario Ejemplo"
+        400:
+          description: visualDifficulty debe ser booleano.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "visualDifficulty debe ser booleano"
+        401:
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No autenticado"
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+
+  /api/admin/accessibility/stats:
+    get:
+      tags: [AdminAccessibility]
+      summary: Obtener estadísticas de accesibilidad del usuario autenticado
+      description: |
+        Devuelve estadísticas de interacciones de voz del usuario autenticado.
+        **Requiere autenticación Firebase.**
+        
+        ### Ejemplo de uso
+        **Local:**
+        ```bash
+        curl -X GET http://localhost:5000/api/admin/accessibility/stats -H "Authorization: Bearer <TOKEN>"
+        ```
+        **Producción:**
+        ```bash
+        curl -X GET https://backend-v1-latest.onrender.com/api/admin/accessibility/stats -H "Authorization: Bearer <TOKEN>"
+        ```
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Estadísticas de accesibilidad del usuario.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalInteractions:
+                    type: integer
+                    example: 12
+                  averageDuration:
+                    type: number
+                    example: 2.5
+              example:
+                totalInteractions: 12
+                averageDuration: 2.5
+        401:
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No autenticado"
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+
+  /api/admin/accessibility-stats:
+    get:
+      tags: [AdminAccessibility]
+      summary: Obtener estadísticas globales de accesibilidad (ADMIN)
+      description: |
+        Devuelve estadísticas globales de accesibilidad y uso del modo de voz.
+        **Requiere autenticación Firebase.**
+        
+        ### Ejemplo de uso
+        **Local:**
+        ```bash
+        curl -X GET http://localhost:5000/api/admin/accessibility-stats -H "Authorization: Bearer <TOKEN>"
+        ```
+        **Producción:**
+        ```bash
+        curl -X GET https://backend-v1-latest.onrender.com/api/admin/accessibility-stats -H "Authorization: Bearer <TOKEN>"
+        ```
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Estadísticas globales de accesibilidad.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                    example: 100
+                  usersWithVisualDifficulty:
+                    type: integer
+                    example: 20
+                  voiceModeUsers:
+                    type: integer
+                    example: 20
+                  adoptionRate:
+                    type: number
+                    example: 20.0
+                  totalVoiceInteractions:
+                    type: integer
+                    example: 300
+                  avgVoiceDuration:
+                    type: number
+                    example: 2.7
+                  voiceAnswerCount:
+                    type: integer
+                    example: 180
+                  questionReadCount:
+                    type: integer
+                    example: 120
+                  lastUpdated:
+                    type: string
+                    example: "2025-10-14T12:00:00.000Z"
+              example:
+                totalUsers: 100
+                usersWithVisualDifficulty: 20
+                voiceModeUsers: 20
+                adoptionRate: 20.0
+                totalVoiceInteractions: 300
+                avgVoiceDuration: 2.7
+                voiceAnswerCount: 180
+                questionReadCount: 120
+                lastUpdated: "2025-10-14T12:00:00.000Z"
+        401:
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No autenticado"
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+
+  /api/admin/voice-mode-users:
+    get:
+      tags: [AdminAccessibility]
+      summary: Obtener lista de usuarios con modo de voz (ADMIN)
+      description: |
+        Devuelve la lista de usuarios que tienen activada la preferencia de accesibilidad visual.
+        **Requiere autenticación Firebase.**
+        
+        ### Ejemplo de uso
+        **Local:**
+        ```bash
+        curl -X GET http://localhost:5000/api/admin/voice-mode-users -H "Authorization: Bearer <TOKEN>"
+        ```
+        **Producción:**
+        ```bash
+        curl -X GET https://backend-v1-latest.onrender.com/api/admin/voice-mode-users -H "Authorization: Bearer <TOKEN>"
+        ```
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Lista de usuarios con modo de voz.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    example: 3
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uid:
+                          type: string
+                          example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                        email:
+                          type: string
+                          example: "usuario@ejemplo.com"
+                        displayName:
+                          type: string
+                          example: "Usuario Ejemplo"
+                        visualDifficulty:
+                          type: boolean
+                          example: true
+                        createdAt:
+                          type: string
+                          example: "2025-10-01T10:00:00.000Z"
+                        lastLogin:
+                          type: string
+                          example: "2025-10-14T09:00:00.000Z"
+              example:
+                total: 2
+                users:
+                  - uid: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                    email: "usuario1@ejemplo.com"
+                    displayName: "Usuario Uno"
+                    visualDifficulty: true
+                    createdAt: "2025-10-01T10:00:00.000Z"
+                    lastLogin: "2025-10-14T09:00:00.000Z"
+                  - uid: "u1a2b3c4d5e6f7g8h9i0j1k2l3"
+                    email: "usuario2@ejemplo.com"
+                    displayName: "Usuario Dos"
+                    visualDifficulty: true
+                    createdAt: "2025-10-02T11:00:00.000Z"
+                    lastLogin: "2025-10-14T08:00:00.000Z"
+        401:
+          description: No autenticado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No autenticado"
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Error interno del servidor"
+
+  /api/voice-interactions:
+    post:
+      tags: [VoiceInteractions]
+      summary: Registrar una nueva interacción de voz
+      description: |
+        Registra una interacción de voz (lectura o respuesta) del usuario.
+        **Integración completa con AssemblyAI para Speech-to-Text (STT).**
+        Si se proporciona audioBase64 en metadata, se procesará automáticamente con AssemblyAI.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, questionId, action, duration, timestamp, metadata]
+              properties:
+                userId:
+                  type: string
+                  example: "abc123"
+                questionId:
+                  type: string
+                  example: "q789"
+                action:
+                  type: string
+                  enum: [question_read, voice_answer]
+                  example: "voice_answer"
+                duration:
+                  type: number
+                  example: 3.2
+                timestamp:
+                  type: string
+                  format: date-time
+                  example: "2025-10-10T12:34:56.789Z"
+                voiceText:
+                  type: string
+                  nullable: true
+                  example: null
+                confidence:
+                  type: number
+                  nullable: true
+                  example: null
+                metadata:
+                  type: object
+                  example: { "audioBase64": "..." }
+            example:
+              userId: "abc123"
+              questionId: "q789"
+              action: "voice_answer"
+              duration: 3.2
+              timestamp: "2025-10-10T12:34:56.789Z"
+              voiceText: null
+              confidence: null
+              metadata:
+                audioBase64: "..."
+      responses:
+        201:
+          description: Interacción registrada correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Voice interaction registered successfully."
+        400:
+          description: Error en los datos enviados.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields."
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/voice-interactions/{userId}:
+    get:
+      tags: [VoiceInteractions]
+      summary: Obtener historial de interacciones de voz de un usuario
+      description: Devuelve el historial completo de interacciones de voz para el usuario indicado.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Historial de interacciones de voz.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    userId:
+                      type: string
+                    questionId:
+                      type: string
+                    action:
+                      type: string
+                    duration:
+                      type: number
+                    timestamp:
+                      type: string
+                    voiceText:
+                      type: string
+                      nullable: true
+                    confidence:
+                      type: number
+                      nullable: true
+                    metadata:
+                      type: object
+              example:
+                - id: "docId1"
+                  userId: "abc123"
+                  questionId: "q789"
+                  action: "voice_answer"
+                  duration: 3.2
+                  timestamp: "2025-10-10T12:34:56.789Z"
+                  voiceText: null
+                  confidence: null
+                  metadata:
+                    audioBase64: "..."
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+    delete:
+      tags: [VoiceInteractions]
+      summary: Eliminar historial de interacciones de voz de un usuario
+      description: Elimina todas las interacciones de voz del usuario indicado.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Historial eliminado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Deleted 3 interactions."
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/voice-interactions/stats/{userId}:
+    get:
+      tags: [VoiceInteractions]
+      summary: Obtener estadísticas básicas de interacciones de voz
+      description: Devuelve estadísticas básicas (total, duración promedio) de las interacciones de voz del usuario.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Estadísticas de interacciones de voz.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    example: 5
+                  averageDuration:
+                    type: number
+                    example: 2.8
+        500:
+          description: Error interno del servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+
+  /api/voice-interactions/process-audio:
+    post:
+      tags: [VoiceInteractions]
+      summary: Procesar audio directamente con AssemblyAI
+      description: |
+        Procesa un archivo de audio en base64 usando AssemblyAI para obtener transcripción y validación.
+        **Integración completa con AssemblyAI para Speech-to-Text (STT).**
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [audioBase64]
+              properties:
+                audioBase64:
+                  type: string
+                  description: Audio en formato base64 (máximo 2MB)
+                  example: "UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBz2J0fPZgjMGHm7A7+OZURE="
+                questionOptions:
+                  type: array
+                  items:
+                    type: string
+                  description: Opciones de la pregunta para validación (opcional)
+                  example: ["Opción A", "Opción B", "Opción C", "Opción D"]
+      responses:
+        200:
+          description: Audio procesado exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  text:
+                    type: string
+                    example: "primera opción"
+                  confidence:
+                    type: number
+                    example: 0.95
+                  duration:
+                    type: number
+                    example: 2.5
+                  language:
+                    type: string
+                    example: "es"
+                  validation:
+                    type: object
+                    properties:
+                      isValid:
+                        type: boolean
+                        example: true
+                      matchedOption:
+                        type: string
+                        example: "Opción A"
+                      answerIndex:
+                        type: integer
+                        example: 0
+                      confidence:
+                        type: number
+                        example: 0.9
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                    example: []
+        400:
+          description: Datos de entrada inválidos.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid or missing audioBase64."
+        413:
+          description: Audio demasiado grande.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Audio demasiado grande."
+        500:
+          description: Error en el procesamiento de audio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Transcription failed"
+                  details:
+                    type: string
+                    example: "API rate limit exceeded"
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Diga 'A' para Opción A...", "Diga 'primera opción'"]
+
+  /api/voice-interactions/assemblyai/status:
+    get:
+      tags: [VoiceInteractions]
+      summary: Verificar estado de AssemblyAI
+      description: Verifica el estado y disponibilidad del servicio AssemblyAI.
+      responses:
+        200:
+          description: Estado de AssemblyAI obtenido exitosamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  status:
+                    type: string
+                    example: "API is working"
+                  data:
+                    type: object
+                    description: Datos adicionales del estado de la API
+        500:
+          description: Error al verificar el estado de AssemblyAI.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "API key invalid"
+
+  /api/users/register:
+    post:
+      tags: [Users]
+      summary: Registrar un nuevo usuario
+      description: |
+        Crea un nuevo usuario en el sistema.  
+        **Nota:** El registro también crea el usuario en Firebase Auth y en la base de datos de usuarios.
+        **Rate Limiting:** Máximo 5 intentos de registro por IP cada 15 minutos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, displayName]
+              properties:
+                email:
+                  type: string
+                  example: "maria.garcia@gmail.com"
+                  description: "Correo electrónico único del usuario. Ejemplo real: maria.garcia@gmail.com"
+                password:
+                  type: string
+                  example: "MiClaveSegura2025!"
+                  description: "Contraseña segura (mínimo 8 caracteres, mayúsculas, minúsculas y símbolos)."
+                displayName:
+                  type: string
+                  example: "Maria Garcia"
+                  description: "Nombre visible del usuario en el juego."
+                visualDifficulty:
+                  type: boolean
+                  example: false
+                  description: "Indica si el usuario tiene dificultades visuales para activar funcionalidades de accesibilidad. Por defecto: false"
+            example:
+              email: "maria.garcia@gmail.com"
+              password: "MiClaveSegura2025!"
+              displayName: "Maria Garcia"
+              visualDifficulty: false
+      responses:
+        201:
+          description: Usuario registrado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uid:
+                    type: string
+                    example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                    description: "UID generado por Firebase Auth. Ejemplo real: u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                  email:
+                    type: string
+                    example: "maria.garcia@gmail.com"
+                  displayName:
+                    type: string
+                    example: "Maria Garcia"
+                  visualDifficulty:
+                    type: boolean
+                    example: false
+                    description: "Preferencia de accesibilidad del usuario"
+              example:
+                uid: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                email: "maria.garcia@gmail.com"
+                displayName: "Maria Garcia"
+                visualDifficulty: false
+        400:
+          description: Error en el registro (por ejemplo, email ya registrado).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "El email ya está en uso."
+              example:
+                error: "El email ya está en uso."
+        429:
+          description: Demasiados intentos de registro.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Demasiados intentos de registro. Intenta de nuevo en 15 minutos."
+              example:
+                error: "Demasiados intentos de registro. Intenta de nuevo en 15 minutos."
+
+  /api/users/me/profile:
+    put:
+      tags: [Users]
+      summary: Actualizar perfil de usuario
+      description: |
+        Actualiza el perfil del usuario autenticado, incluyendo preferencias de accesibilidad.
+        **Requiere:** Token de autenticación Firebase en el header Authorization.
+        **Rate Limiting:** Máximo 10 actualizaciones por IP cada 5 minutos.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  example: "Maria Garcia Actualizada"
+                  description: "Nuevo nombre visible del usuario en el juego."
+                visualDifficulty:
+                  type: boolean
+                  example: true
+                  description: "Actualizar preferencia de accesibilidad visual."
+            example:
+              displayName: "Maria Garcia Actualizada"
+              visualDifficulty: true
+      responses:
+        200:
+          description: Perfil actualizado correctamente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uid:
+                    type: string
+                    example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                  displayName:
+                    type: string
+                    example: "Maria Garcia Actualizada"
+                  email:
+                    type: string
+                    example: "maria.garcia@gmail.com"
+                  visualDifficulty:
+                    type: boolean
+                    example: true
+                  stats:
+                    type: object
+                    properties:
+                      gamesPlayed:
+                        type: integer
+                        example: 12
+                      wins:
+                        type: integer
+                        example: 4
+                      correctAnswers:
+                        type: integer
+                        example: 87
+              example:
+                uid: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                displayName: "Maria Garcia Actualizada"
+                email: "maria.garcia@gmail.com"
+                visualDifficulty: true
+                stats:
+                  gamesPlayed: 12
+                  wins: 4
+                  correctAnswers: 87
+        400:
+          description: Error en la actualización (campos inválidos).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "visualDifficulty must be a boolean value"
+              example:
+                error: "visualDifficulty must be a boolean value"
+        401:
+          description: Token de autenticación requerido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Authentication required"
+              example:
+                error: "Authentication required"
+        404:
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+              example:
+                error: "User not found"
+
+  /api/users/login:
+    post:
+      tags: [Users]
+      summary: Login de usuario (Referencia)
+      description: |
+        Este endpoint es solo de referencia.  
+        El login real se realiza en el frontend usando Firebase Auth.
+      responses:
+        501:
+          description: Login manejado en el cliente.
+
+  /api/users/recover-password:
+    post:
+      tags: [Users]
+      summary: Recuperar contraseña
+      description: |
+        Envía un correo de recuperación de contraseña al usuario.
+        **Rate Limiting:** Máximo 3 intentos de recuperación por IP cada 15 minutos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  example: "maria.garcia@gmail.com"
+            example:
+              email: "maria.garcia@gmail.com"
+      responses:
+        200:
+          description: Email de recuperación enviado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Se ha enviado un correo de recuperación a maria.garcia@gmail.com."
+              example:
+                message: "Se ha enviado un correo de recuperación a maria.garcia@gmail.com."
+        400:
+          description: Error al enviar email.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No se pudo enviar el correo."
+              example:
+                error: "No se pudo enviar el correo."
+
+  /api/users/me/stats:
+    get:
+      tags: [Users]
+      summary: Obtener estadísticas del usuario
+      description: |
+        Devuelve las estadísticas del usuario autenticado.  
+        **Requiere:** UID del usuario como parámetro de consulta.
+      parameters:
+        - in: query
+          name: uid
+          schema:
+            type: string
+          required: true
+          description: UID del usuario (lo obtienes tras el login).
+          example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+      responses:
+        200:
+          description: Estadísticas del usuario encontradas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uid:
+                    type: string
+                    example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                  stats:
+                    type: object
+                    properties:
+                      gamesPlayed:
+                        type: integer
+                        example: 12
+                        description: "Número total de partidas jugadas por el usuario."
+                      wins:
+                        type: integer
+                        example: 4
+                        description: "Partidas ganadas por el usuario."
+                      correctAnswers:
+                        type: integer
+                        example: 87
+                        description: "Total de respuestas correctas."
+                  visualDifficulty:
+                    type: boolean
+                    example: false
+                    description: "Preferencia de accesibilidad del usuario"
+              example:
+                uid: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                stats:
+                  gamesPlayed: 12
+                  wins: 4
+                  correctAnswers: 87
+                visualDifficulty: false
+        404:
+          description: Usuario no encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "User not found"
+              example:
+                error: "User not found"
+
+  /api/users/me/history:
+    get:
+      tags: [Users]
+      summary: (Deshabilitado) Historial de partidas
+      description: |
+        Este endpoint está deshabilitado y siempre devuelve un array vacío.
+      responses:
+        200:
+          description: Historial vacío.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+              example: []
+
+  /api/games:
+    get:
+      tags: [Games]
+      summary: Listar juegos públicos disponibles
+      description: |
+        Obtiene la lista de juegos públicos en estado "waiting" (esperando jugadores).
+        **Rate limited**
+      responses:
+        '200':
+          description: "Lista de juegos públicos disponibles"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "game123456"
+                    gameTitle:
+                      type: string
+                      example: "Trivia de Ciencia"
+                    topic:
+                      type: string
+                      example: "ciencia"
+                    difficulty:
+                      type: string
+                      example: "medium"
+                    createdBy:
+                      type: string
+                    status:
+                      type: string
+                      enum: ["waiting", "playing", "finished"]
+                      example: "waiting"
+                    maxPlayers:
+                      type: integer
+                      example: 4
+                    currentPlayers:
+                      type: integer
+                      example: 1
+                    createdAt:
+                      type: string
+                      format: date-time
+
+  /api/games/{gameId}:
+    delete:
+      tags: [Games]
+      summary: Eliminar juego público
+      description: |
+        Elimina un juego público. Solo el creador puede eliminar su juego.
+        Requiere autenticación.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ID del juego a eliminar"
+      responses:
+        '200':
+          description: "Juego eliminado exitosamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Game deleted successfully"
+        '403':
+          description: "No autorizado para eliminar este juego"
+        '404':
+          description: "Juego no encontrado"
+
+  # ========================================
+  # QUESTIONS - QUESTION MANAGEMENT
+  # ========================================
+
+  /api/questions:
+    get:
+      tags: [Questions]
+      summary: Obtener todas las preguntas
+      description: |
+        Retorna la lista completa de preguntas disponibles en la base de datos.
+        **Rate limited** - Sin requiere autenticación
+      responses:
+        '200':
+          description: "Lista de todas las preguntas"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "q123456"
+                    text:
+                      type: string
+                      example: "¿Cuál es la capital de Francia?"
+                    options:
+                      type: array
+                      items:
+                        type: string
+                      example: ["París", "Lyon", "Marsella"]
+                    correctAnswerIndex:
+                      type: integer
+                      example: 0
+                    category:
+                      type: string
+                      example: "geografía"
+                    explanation:
+                      type: string
+                      example: "París es la capital de Francia..."
+
+    post:
+      tags: [Questions]
+      summary: Crear nueva pregunta
+      description: |
+        Crea una nueva pregunta en la base de datos.
+        **Requiere autenticación**
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  example: "¿Cuál es el planeta más grande?"
+                options:
+                  type: array
+                  items:
+                    type: string
+                  example: ["Júpiter", "Saturno", "Neptuno"]
+                correctAnswerIndex:
+                  type: integer
+                  example: 0
+                category:
+                  type: string
+                  example: "astronomía"
+                explanation:
+                  type: string
+      responses:
+        '201':
+          description: "Pregunta creada exitosamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        '400':
+          description: "Parámetros inválidos"
+        '401':
+          description: "No autenticado"
+
+  /api/questions/bulk:
+    post:
+      tags: [Questions]
+      summary: Crear múltiples preguntas
+      description: |
+        Crea varias preguntas en una sola solicitud.
+        **Requiere autenticación**
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                questions:
+                  type: array
+                  items:
+                    type: object
+                  minItems: 1
+      responses:
+        '200':
+          description: "Preguntas creadas exitosamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '400':
+          description: "Sin preguntas proporcionadas"
+        '401':
+          description: "No autenticado"
+
+  /api/questions/{id}:
+    put:
+      tags: [Questions]
+      summary: Actualizar pregunta
+      description: |
+        Actualiza una pregunta existente.
+        **Requiere autenticación**
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ID de la pregunta"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: "Pregunta actualizada"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Question updated"
+        '400':
+          description: "Error al actualizar"
+
+    delete:
+      tags: [Questions]
+      summary: Eliminar pregunta
+      description: |
+        Elimina una pregunta.
+        **Requiere autenticación**
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ID de la pregunta"
+      responses:
+        '200':
+          description: "Pregunta eliminada"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Question deleted"
+        '400':
+          description: "Error al eliminar"
+
+  # ===========================================
+  # FACIAL RECOGNITION - BIOMETRIC AUTH
+  # ===========================================
+
+  /api/face/register:
+    post:
+      tags: [FacialRecognition]
+      summary: "Registrar rostro del usuario"
+      description: |
+        Registra el rostro de un usuario autenticado para habilitar login facial.
+        Requiere autenticación Firebase y una imagen clara del rostro.
+        
+        **Validaciones:**
+        - La imagen debe ser Base64 válida
+        - El token de Firebase debe ser válido
+        - El usuario no debe tener un registro facial previo
+        - La cara debe ser detectada en la imagen
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - image
+                - token
+              properties:
+                image:
+                  type: string
+                  description: "Imagen en formato Base64 (JPEG, PNG, WebP)"
+                  example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA..."
+                token:
+                  type: string
+                  description: "Token de autenticación Firebase (idToken)"
+                  example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjEyMzQifQ..."
+      responses:
+        '201':
+          description: "Registro facial exitoso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Registro facial completado exitosamente"
+                  userId:
+                    type: string
+                    example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                  registeredAt:
+                    type: string
+                    format: date-time
+                    example: "2025-11-24T10:30:00.000Z"
+        '400':
+          description: "Error en la solicitud"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    enum:
+                      - "Se requiere una imagen en Base64"
+                      - "Se requiere un token de autenticación"
+                      - "No se detectó una cara en la imagen. Por favor, asegúrate de que tu rostro sea claramente visible."
+                      - "El usuario ya tiene un registro facial. Elimina el registro anterior para crear uno nuevo."
+        '401':
+          description: "Autenticación inválida"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Token inválido o expirado"
+        '429':
+          description: "Límite de tasa excedido"
+        '500':
+          description: "Error en el servidor o microservicio"
+
+  /api/face/login:
+    post:
+      tags: [FacialRecognition]
+      summary: "Login facial - Autenticación biométrica"
+      description: |
+        Realiza login del usuario comparando su rostro actual con el registro facial guardado.
+        No requiere autenticación previa (endpoint público).
+        
+        **Flujo:**
+        1. Cliente envía imagen del rostro y email
+        2. Sistema busca el registro del usuario
+        3. Compara rostro actual con embedding guardado
+        4. Si coincide, genera token personalizado de Firebase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - image
+                - email
+              properties:
+                image:
+                  type: string
+                  description: "Imagen en formato Base64 (JPEG, PNG, WebP)"
+                  example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA..."
+                email:
+                  type: string
+                  format: email
+                  description: "Email del usuario"
+                  example: "usuario@example.com"
+      responses:
+        '200':
+          description: "Login facial exitoso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  verified:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Login facial exitoso"
+                  userId:
+                    type: string
+                    example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+                  customToken:
+                    type: string
+                    description: "Token personalizado de Firebase para sesión"
+                    example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjEyMzQifQ..."
+                  confidence:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+                    description: "Nivel de confianza de la coincidencia facial (0-1)"
+                    example: 0.95
+                  distance:
+                    type: number
+                    description: "Distancia euclidiana entre embeddings (menor = mejor coincidencia)"
+                    example: 0.3
+        '400':
+          description: "Error en los parámetros o validación"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    enum:
+                      - "Se requiere una imagen en Base64"
+                      - "Se requiere el email del usuario"
+                      - "El usuario no tiene un registro facial. Por favor, regístrate primero."
+                      - "Error en la verificación facial"
+        '401':
+          description: "Las caras no coinciden - Acceso denegado"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  verified:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Las caras no coinciden. Acceso denegado."
+                  confidence:
+                    type: number
+                    example: 0.45
+        '404':
+          description: "Usuario no encontrado"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Usuario no encontrado"
+        '429':
+          description: "Límite de tasa excedido"
+        '500':
+          description: "Error en el servidor o microservicio"
+
+  /api/face/exists:
+    get:
+      tags: [FacialRecognition]
+      summary: "Verificar si usuario tiene registro facial"
+      description: |
+        Comprueba si el usuario autenticado tiene un registro facial guardado.
+        Requiere autenticación Firebase.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: token
+          in: query
+          required: false
+          schema:
+            type: string
+          description: "Token de Firebase (alternativa a header Authorization)"
+          example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjEyMzQifQ..."
+      responses:
+        '200':
+          description: "Estado del registro facial"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  exists:
+                    type: boolean
+                    description: "true si el usuario tiene registro facial, false si no"
+                    example: true
+        '401':
+          description: "Autenticación inválida"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Se requiere token de autenticación"
+        '500':
+          description: "Error en el servidor"
+
+  /api/face/{userId}:
+    delete:
+      tags: [FacialRecognition]
+      summary: "Eliminar registro facial"
+      description: |
+        Elimina el registro facial del usuario.
+        Requiere autenticación Firebase y el usuario solo puede eliminar su propio registro.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ID del usuario (debe coincidir con el token autenticado)"
+          example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: "Token de Firebase (alternativa a header Authorization)"
+      responses:
+        '200':
+          description: "Registro facial eliminado exitosamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  removed:
+                    type: boolean
+                    example: true
+        '400':
+          description: "Parámetros inválidos"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Se requiere userId"
+        '401':
+          description: "Autenticación inválida"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Se requiere token de autenticación"
+        '403':
+          description: "No autorizado"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "No autorizado para eliminar este registro"
+        '500':
+          description: "Error en el servidor"
+
+  # ===========================================
+  # VISION - IMAGE ANALYSIS (HU-VC3)
+  # ===========================================
+
+  /api/vision/analyze-image:
+    post:
+      tags: [Vision]
+      summary: "HU-VC3 - Analizar imagen completa"
+      description: |
+        Realiza análisis completo de una imagen incluyendo descripción, etiquetas, categorías, objetos y colores.
+        Utiliza Azure Computer Vision para proporcionar información detallada de la imagen.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                imageBase64:
+                  type: string
+                  description: "Imagen codificada en base64. Formato: 'data:image/jpeg;base64,...'"
+                  example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA..."
+                imageUrl:
+                  type: string
+                  description: "URL pública de la imagen (alternativa a imageBase64)"
+                  example: "https://example.com/image.jpg"
+                mimeType:
+                  type: string
+                  description: "Tipo MIME de la imagen (opcional, se detecta automáticamente)"
+                  enum: ["image/jpeg", "image/png", "image/webp", "image/bmp"]
+                  example: "image/jpeg"
+                language:
+                  type: string
+                  default: "es"
+                  description: "Idioma para las etiquetas y descripción"
+                  enum: ["es", "en", "fr", "de", "pt", "it"]
+      responses:
+        '200':
+          description: "Análisis de imagen exitoso"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysis:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                        description: "Descripción textual de la imagen"
+                        example: "Un gato naranja descansando en un sofá azul"
+                      tags:
+                        type: array
+                        description: "Etiquetas detectadas en la imagen"
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            confidence:
+                              type: number
+                        example:
+                          - name: "gato"
+                            confidence: 0.98
+                          - name: "animal"
+                            confidence: 0.95
+                      categories:
+                        type: array
+                        description: "Categorías de la imagen"
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            score:
+                              type: number
+                      objects:
+                        type: array
+                        description: "Objetos detectados con bounding boxes"
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            rectangle:
+                              type: object
+                              properties:
+                                x: { type: number }
+                                y: { type: number }
+                                w: { type: number }
+                                h: { type: number }
+                            confidence:
+                              type: number
+                      colors:
+                        type: object
+                        description: "Análisis de colores predominantes"
+                        properties:
+                          accentColor:
+                            type: string
+                            example: "FF6B35"
+                          dominantColors:
+                            type: array
+                            items: { type: string }
+                          isBWImg:
+                            type: boolean
+                      metadata:
+                        type: object
+                        description: "Metadatos de la imagen"
+                        properties:
+                          width:
+                            type: number
+                          height:
+                            type: number
+                      objectSummary:
+                        type: array
+                        description: "Resumen de objetos detectados con conteo"
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            count:
+                              type: number
+                  questionSuggestions:
+                    type: object
+                    description: "Sugerencias automáticas de preguntas"
+                    properties:
+                      question:
+                        type: string
+                        example: "¿Qué se muestra en esta imagen?"
+                      options:
+                        type: array
+                        items:
+                          type: string
+                        example: ["gato", "perro", "aves", "reptil"]
+                      suggestedAnswer:
+                        type: string
+                      descriptionContext:
+                        type: string
+                      categorySuggestion:
+                        type: string
+                      confidence:
+                        type: number
+                  processedAt:
+                    type: string
+                    format: date-time
+                  language:
+                    type: string
+                    example: "es"
+        '400':
+          description: "Error en la solicitud"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    enum:
+                      - "Provide imageBase64, imageUrl or a file upload"
+                      - "Invalid base64 image data"
+                      - "Invalid image URL"
+                      - "Image is too large (max 4 MB)"
+                      - "Invalid image type. Supported: JPEG, PNG, WebP, BMP"
+        '401':
+          description: "No autenticado"
+        '403':
+          description: "No autorizado"
+        '429':
+          description: "Límite de tasa excedido"
+        '503':
+          description: "Servicio no disponible"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Azure Computer Vision service is not configured"
+
+  # ===========================================
+  # OCR - OPTICAL CHARACTER RECOGNITION (HU-VC2)
+  # ===========================================
+
+  /api/ocr/health:
+    get:
+      tags: [OCR]
+      summary: "Verificar estado del servicio OCR"
+      description: "Comprueba la disponibilidad del servicio OCR (Azure Computer Vision)."
+      responses:
+        '200':
+          description: "Estado del servicio OCR"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  status:
+                    type: string
+                    enum: ["healthy", "disabled"]
+                    example: "healthy"
+                  service:
+                    type: string
+                    example: "azure-computer-vision-ocr"
+
+  /api/ocr/process-url:
+    post:
+      tags: [OCR]
+      summary: "Extraer texto de imagen desde URL"
+      description: |
+        Realiza OCR (reconocimiento óptico de caracteres) en una imagen desde una URL pública.
+        Extrae todo el texto visible en la imagen y lo parsea automáticamente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - imageUrl
+              properties:
+                imageUrl:
+                  type: string
+                  format: uri
+                  description: "URL pública de la imagen"
+                  example: "https://example.com/document.jpg"
+                language:
+                  type: string
+                  default: "es"
+                  description: "Idioma del texto en la imagen"
+                  enum: ["es", "en", "fr", "de", "pt", "it"]
+      responses:
+        '200':
+          description: "Texto extraído exitosamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  rawText:
+                    type: string
+                    description: "Texto completo extraído de la imagen"
+                    example: "¿Cuál es la capital de Francia?\nParis\nLyon\nMarsella"
+                  pregunta:
+                    type: string
+                    description: "Pregunta parseada del texto"
+                    example: "¿Cuál es la capital de Francia?"
+                  opciones:
+                    type: array
+                    description: "Opciones extraídas y parseadas"
+                    items:
+                      type: string
+                    example: ["Paris", "Lyon", "Marsella"]
+                  confidence:
+                    type: string
+                    enum: ["low", "medium", "high"]
+                    example: "high"
+        '400':
+          description: "Error en la solicitud"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    enum:
+                      - "Invalid or missing imageUrl"
+                      - "No text found in the image. Please provide an image with clear, readable text."
+        '429':
+          description: "Límite de tasa excedido"
+        '503':
+          description: "Servicio no disponible"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "OCR service is not configured"
+
+  /api/ocr/process-image:
+    post:
+      tags: [OCR]
+      summary: "Extraer texto de imagen desde Base64"
+      description: |
+        Realiza OCR (reconocimiento óptico de caracteres) en una imagen codificada en Base64.
+        Extrae todo el texto visible y lo parsea automáticamente para crear preguntas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - imageBase64
+              properties:
+                imageBase64:
+                  type: string
+                  description: "Imagen en formato Base64. Formato: 'data:image/jpeg;base64,...' o solo Base64"
+                  example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA..."
+                mimeType:
+                  type: string
+                  description: "Tipo MIME de la imagen (opcional, default: image/jpeg)"
+                  enum: ["image/jpeg", "image/png", "image/webp", "image/bmp"]
+                  default: "image/jpeg"
+                language:
+                  type: string
+                  default: "es"
+                  description: "Idioma del texto en la imagen"
+                  enum: ["es", "en", "fr", "de", "pt", "it"]
+      responses:
+        '200':
+          description: "Texto extraído exitosamente"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  rawText:
+                    type: string
+                    description: "Texto completo extraído de la imagen"
+                    example: "¿Cuál es la capital de Francia?\nParis\nLyon\nMarsella"
+                  pregunta:
+                    type: string
+                    description: "Pregunta parseada del texto (vacío si no se detectó pregunta)"
+                    example: "¿Cuál es la capital de Francia?"
+                  opciones:
+                    type: array
+                    description: "Opciones parseadas (vacío si no se detectaron)"
+                    items:
+                      type: string
+                    example: ["Paris", "Lyon", "Marsella"]
+                  confidence:
+                    type: string
+                    enum: ["low", "high"]
+                    description: "Confianza basada en cantidad de texto extraído"
+                    example: "high"
+        '400':
+          description: "Error en la solicitud"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    enum:
+                      - "Invalid or missing imageBase64"
+                      - "Invalid base64 image data"
+                      - "Image size exceeds maximum allowed (50MB)"
+        '429':
+          description: "Límite de tasa excedido"
+        '503':
+          description: "Servicio no disponible"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "OCR service is not configured"
+
+  # ===========================================
+  # VISION - OBJECT DETECTION (HU-VC4)
+  # ===========================================
+
+  /api/vision/detect-objects:
+    post:
+      summary: "HU-VC4 - Detectar objetos en imágenes"
+      description: "Detecta y localiza objetos específicos en imágenes usando Azure Computer Vision. Permite crear preguntas interactivas basadas en objetos detectados."
+      tags:
+        - Vision
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - imageBase64
+              properties:
+                imageBase64:
+                  type: string
+                  description: "Imagen codificada en base64. Formato: 'data:image/jpeg;base64,...'"
+                  example: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAA..."
+                imageUrl:
+                  type: string
+                  description: "URL pública de la imagen (alternativa a imageBase64)"
+                  example: "https://example.com/image.jpg"
+                minConfidence:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  default: 0.5
+                  description: "Umbral mínimo de confianza para incluir objetos detectados"
+                  example: 0.6
+                language:
+                  type: string
+                  default: "es"
+                  description: "Idioma para las etiquetas de objetos"
+                  enum: ["es", "en", "fr", "de", "pt", "it"]
+                objectName:
+                  type: string
+                  description: "Filtrar por nombre específico de objeto (ej: 'guitar')"
+                  example: "guitar"
+      responses:
+        '200':
+          description: "Detección exitosa"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  detection:
+                    type: object
+                    properties:
+                      objects:
+                        type: array
+                        description: "Lista de objetos detectados"
+                        items:
+                          $ref: '#/components/schemas/DetectedObject'
+                      objectCounts:
+                        type: object
+                        description: "Conteo de objetos por tipo"
+                        example:
+                          guitar: 1
+                          person: 2
+                          piano: 1
+                      groupedByType:
+                        type: object
+                        description: "Objetos agrupados por tipo"
+                        example:
+                          guitar:
+                            - id: 0
+                              name: "guitar"
+                              confidence: 0.98
+                      stats:
+                        $ref: '#/components/schemas/ObjectDetectionStats'
+                      topObjects:
+                        type: array
+                        description: "Top 5 objetos más confiables"
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            confidence:
+                              type: number
+                            count:
+                              type: number
+                      metadata:
+                        type: object
+                        description: "Metadatos de la detección"
+                        properties:
+                          width:
+                            type: number
+                            example: 1920
+                          height:
+                            type: number
+                            example: 1440
+                          service:
+                            type: string
+                            example: "Azure Computer Vision v3.2"
+                          timestamp:
+                            type: string
+                            format: date-time
+                          minConfidenceThreshold:
+                            type: number
+                            example: 0.5
+                  questionSuggestions:
+                    type: object
+                    description: "Sugerencias automáticas de preguntas"
+                    properties:
+                      identification:
+                        type: object
+                        description: "Pregunta de identificación"
+                        properties:
+                          type:
+                            type: string
+                            example: "identification"
+                          question:
+                            type: string
+                            example: "¿Qué objeto aparece en esta imagen?"
+                          options:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                text:
+                                  type: string
+                                confidence:
+                                  type: number
+                                isCorrect:
+                                  type: boolean
+                          correctAnswer:
+                            type: string
+                          explanation:
+                            type: string
+                      counting:
+                        type: object
+                        description: "Pregunta de conteo"
+                        properties:
+                          type:
+                            type: string
+                            example: "counting"
+                          question:
+                            type: string
+                            example: "¿Cuántos guitar(s) hay en la imagen?"
+                          options:
+                            type: array
+                            items:
+                              type: string
+                            example: ["0", "1", "2", "3"]
+                          correctAnswer:
+                            type: string
+                            example: "1"
+                      multipleChoice:
+                        type: object
+                        description: "Pregunta de opción múltiple"
+                        nullable: true
+                  cost:
+                    type: object
+                    description: "Información de costos"
+                    properties:
+                      usd:
+                        type: number
+                        example: 0.0005
+                      note:
+                        type: string
+                  processedAt:
+                    type: string
+                    format: date-time
+                  language:
+                    type: string
+                    example: "es"
+        '400':
+          description: "Error en la solicitud"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    enum:
+                      - MISSING_IMAGE
+                      - IMAGE_TOO_LARGE
+                      - INVALID_IMAGE_TYPE
+                      - INVALID_CONFIDENCE
+        '401':
+          description: "No autenticado"
+        '403':
+          description: "No autorizado"
+        '429':
+          description: "Límite de tasa excedido"
+        '503':
+          description: "Servicio no disponible"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                  code:
+                    type: string
+                    example: "SERVICE_UNAVAILABLE"
+
+  # ===========================================
+  # DOCUMENTACIÓN DE EVENTOS WEBSOCKET
+  # ===========================================
+
+  # Eventos de entrada (cliente -> servidor):
+  # - submitVoiceAnswer: Enviar respuesta de voz
+  # - toggleVoiceMode: Activar/desactivar modo de voz
+  # - getVoiceModeStatus: Obtener estado del modo de voz
+
+  # Eventos de salida (servidor -> cliente):
+  # - voiceAnswerReceived: Respuesta de voz recibida
+  # - voiceAnswerError: Error en respuesta de voz
+  # - voiceModeChanged: Modo de voz cambiado
+  # - voiceModeStatus: Estado del modo de voz
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: "Token JWT de Firebase Auth"
+  schemas:
+    Question:
+      type: object
+      required: [text, options, correctAnswerIndex, category, difficulty, explanation]
+      properties:
+        text:
+          type: string
+          description: "Texto de la pregunta"
+          example: "¿Cuál es el río más largo del mundo?"
+        options:
+          type: array
+          description: "Opciones de respuesta"
+          items:
+            type: string
+          example: ["Nilo", "Amazonas", "Yangtsé", "Misisipi"]
+
+    # ========== VISION - OBJECT DETECTION SCHEMAS ==========
+    
+    DetectedObject:
+      type: object
+      description: "Objeto detectado en una imagen"
+      properties:
+        id:
+          type: number
+          description: "ID único del objeto detectado"
+        name:
+          type: string
+          description: "Nombre/etiqueta del objeto"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Nivel de confianza (0-1)"
+        rectangle:
+          type: object
+          description: "Bounding box del objeto (en píxeles)"
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+            w:
+              type: number
+            h:
+              type: number
+        normalizedRectangle:
+          type: object
+          description: "Bounding box normalizado (0-1 para Canvas)"
+          properties:
+            x:
+              type: number
+              minimum: 0
+              maximum: 1
+            y:
+              type: number
+              minimum: 0
+              maximum: 1
+            w:
+              type: number
+              minimum: 0
+              maximum: 1
+            h:
+              type: number
+              minimum: 0
+              maximum: 1
+        area:
+          type: number
+          description: "Área del objeto en píxeles"
+
+    ObjectDetectionStats:
+      type: object
+      description: "Estadísticas de detección de objetos"
+      properties:
+        totalObjects:
+          type: number
+          description: "Total de objetos detectados"
+        totalTypes:
+          type: number
+          description: "Cantidad de tipos únicos de objetos"
+        averageConfidence:
+          type: number
+          description: "Confianza promedio"
+        maxConfidence:
+          type: number
+          description: "Confianza máxima"
+        minConfidence:
+          type: number
+          description: "Confianza mínima"
+
+    QuestionSuggestion:
+      type: object
+      description: "Sugerencia de pregunta generada automáticamente"
+      properties:
+        type:
+          type: string
+          enum: ["identification", "counting", "multipleChoice"]
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        correctAnswer:
+          type: string
+        explanation:
+          type: string
+
+    # ========== FACIAL RECOGNITION SCHEMAS ==========
+    
+    FaceRegistrationResponse:
+      type: object
+      description: "Respuesta de registro facial exitoso"
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Registro facial completado exitosamente"
+        userId:
+          type: string
+          example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+        registeredAt:
+          type: string
+          format: date-time
+
+    FaceLoginResponse:
+      type: object
+      description: "Respuesta de login facial exitoso"
+      properties:
+        success:
+          type: boolean
+          example: true
+        verified:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Login facial exitoso"
+        userId:
+          type: string
+          example: "u7d8f9g0h1i2j3k4l5m6n7o8p9"
+        customToken:
+          type: string
+          description: "Token personalizado de Firebase"
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: "Nivel de confianza de coincidencia (0-1)"
+        distance:
+          type: number
+          description: "Distancia euclidiana entre embeddings"
+
+    FaceExistsResponse:
+      type: object
+      description: "Respuesta de verificación de registro facial"
+      properties:
+        success:
+          type: boolean
+          example: true
+        exists:
+          type: boolean
+          description: "true si usuario tiene registro facial"
+          example: true
+
+    FaceDeleteResponse:
+      type: object
+      description: "Respuesta de eliminación de registro facial"
+      properties:
+        success:
+          type: boolean
+          example: true
+        removed:
+          type: boolean
+          example: true
+
+    FaceErrorResponse:
+      type: object
+      description: "Respuesta de error en operación facial"
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Mensaje de error específico"

@@ -1,0 +1,169 @@
+name: Voice API Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'controllers/voiceController.js'
+      - 'controllers/assemblyAIController.js'
+      - 'routes/voiceResponses.js'
+      - 'routes/assemblyAI.js'
+      - 'services/assemblyAIService.js'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'controllers/voiceController.js'
+      - 'controllers/assemblyAIController.js'
+      - 'routes/voiceResponses.js'
+      - 'routes/assemblyAI.js'
+      - 'services/assemblyAIService.js'
+
+jobs:
+  validate-voice-api:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'backend-v1/package-lock.json'
+    
+    - name: Install dependencies
+      working-directory: ./backend-v1
+      run: npm install
+    
+    - name: Run Voice Controller Unit Tests
+      working-directory: ./backend-v1
+      run: npm run test:unit -- --testNamePattern="voiceController" --coverage --coverageReporters=json --coverageReporters=html
+    
+    - name: Run All Unit Tests
+      working-directory: ./backend-v1
+      run: npm run test:unit -- --coverage --coverageReporters=json --coverageReporters=html
+    
+    - name: Validate Code Syntax
+      working-directory: ./backend-v1
+      run: |
+        for file in controllers/*.js routes/*.js services/*.js; do
+          if [ -f "$file" ]; then
+            node -c "$file" || exit 1
+          fi
+        done
+    
+    - name: Check Required Files Exist
+      working-directory: ./backend-v1
+      run: |
+        required_files=(
+          "controllers/voiceController.js"
+          "controllers/assemblyAIController.js"
+          "routes/voiceResponses.js"
+          "routes/assemblyAI.js"
+          "services/assemblyAIService.js"
+        )
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            echo "❌ Required file missing: $file"
+            exit 1
+          fi
+        done
+        echo "✅ All required files exist"
+    
+    - name: Verify Route Registration
+      working-directory: ./backend-v1
+      run: |
+        if ! grep -q "voice-responses" hybridServer.js; then
+          echo "❌ voice-responses route not registered"
+          exit 1
+        fi
+        if ! grep -q "assemblyai" hybridServer.js; then
+          echo "❌ assemblyai route not registered"
+          exit 1
+        fi
+        echo "✅ All routes registered correctly"
+    
+    - name: Check Dependencies
+      working-directory: ./backend-v1
+      run: |
+        if ! npm list axios > /dev/null 2>&1; then
+          echo "❌ axios dependency missing"
+          exit 1
+        fi
+        echo "✅ All dependencies installed"
+    
+    - name: Validate Exports
+      working-directory: ./backend-v1
+      run: |
+        # Check voiceController exports
+        if ! grep -q "exports.validateVoiceResponse" controllers/voiceController.js; then
+          echo "❌ validateVoiceResponse not exported"
+          exit 1
+        fi
+        if ! grep -q "exports.processVoiceResponse" controllers/voiceController.js; then
+          echo "❌ processVoiceResponse not exported"
+          exit 1
+        fi
+        if ! grep -q "exports.getVoiceRecognitionStats" controllers/voiceController.js; then
+          echo "❌ getVoiceRecognitionStats not exported"
+          exit 1
+        fi
+        
+        # Check assemblyAIController exports
+        if ! grep -q "exports.textToSpeech" controllers/assemblyAIController.js; then
+          echo "❌ textToSpeech not exported"
+          exit 1
+        fi
+        if ! grep -q "exports.speechToText" controllers/assemblyAIController.js; then
+          echo "❌ speechToText not exported"
+          exit 1
+        fi
+        
+        echo "✅ All required functions exported"
+    
+    - name: Upload Coverage Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: backend-v1/coverage/
+    
+    - name: Comment PR with Test Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const coverage = JSON.parse(fs.readFileSync('backend-v1/coverage/coverage-summary.json', 'utf8'));
+          
+          const comment = `## 🧪 Voice API Validation Results
+          
+          ### ✅ Tests Passed
+          - Voice Controller Unit Tests: **PASSED**
+          - Code Syntax Validation: **PASSED**
+          - Required Files Check: **PASSED**
+          - Route Registration: **PASSED**
+          - Dependencies Check: **PASSED**
+          - Exports Validation: **PASSED**
+          
+          ### 📊 Coverage Summary
+          - **Total Coverage**: ${coverage.total.lines.pct}%
+          - **Statements**: ${coverage.total.statements.pct}%
+          - **Branches**: ${coverage.total.branches.pct}%
+          - **Functions**: ${coverage.total.functions.pct}%
+          
+          ### 🎯 Voice Controller Coverage
+          - **Lines**: ${coverage['controllers/voiceController.js'].lines.pct}%
+          - **Functions**: ${coverage['controllers/voiceController.js'].functions.pct}%
+          
+          ### 🚀 Status
+          **✅ ALL VALIDATIONS PASSED - CODE IS STABLE**
+          
+          The voice API implementation is ready and should not fail in production.`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

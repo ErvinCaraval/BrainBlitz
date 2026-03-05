@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Voz Simple - BrainBlitz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .status {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #4CAF50;
+        }
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #44ff44;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info {
+            background: #4444ff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+        }
+        .voice-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .voice-item {
+            padding: 5px;
+            border-bottom: 1px solid #555;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 Prueba de Voz Simple - BrainBlitz</h1>
+    
+    <div class="container">
+        <h2>Información del Sistema</h2>
+        <div id="systemInfo" class="status">
+            Cargando información del sistema...
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Prueba de Voz</h2>
+        <input type="text" id="textInput" placeholder="Escribe el texto que quieres que se lea..." value="Hola, este es un test de voz. Si puedes escuchar esto, el sistema de voz está funcionando correctamente.">
+        <br>
+        <button onclick="speakText()" id="speakBtn">🔊 Leer Texto</button>
+        <button onclick="stopSpeaking()" id="stopBtn" disabled>⏹️ Detener</button>
+        <button onclick="pauseSpeaking()" id="pauseBtn" disabled>⏸️ Pausar</button>
+        <button onclick="resumeSpeaking()" id="resumeBtn" disabled>▶️ Reanudar</button>
+    </div>
+
+    <div class="container">
+        <h2>Configuración de Voz</h2>
+        <label>Velocidad: <input type="range" id="rateSlider" min="0.1" max="2" step="0.1" value="1" onchange="updateSettings()"></label>
+        <span id="rateValue">1.0</span><br>
+        <label>Volumen: <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1" onchange="updateSettings()"></label>
+        <span id="volumeValue">1.0</span><br>
+        <label>Tono: <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1" onchange="updateSettings()"></label>
+        <span id="pitchValue">1.0</span><br>
+        <label>Idioma: 
+            <select id="languageSelect" onchange="updateSettings()">
+                <option value="es-ES">Español (España)</option>
+                <option value="es-MX">Español (México)</option>
+                <option value="es-AR">Español (Argentina)</option>
+                <option value="en-US">English (US)</option>
+            </select>
+        </label>
+    </div>
+
+    <div class="container">
+        <h2>Voces Disponibles</h2>
+        <div id="voiceList" class="voice-list">
+            Cargando voces...
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Log de Eventos</h2>
+        <div id="eventLog" class="status">
+            Esperando eventos...
+        </div>
+    </div>
+
+    <script>
+        let currentUtterance = null;
+        let voices = [];
+        let eventLog = [];
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            eventLog.push(`[${timestamp}] ${message}`);
+            document.getElementById('eventLog').innerHTML = eventLog.slice(-10).join('<br>');
+            console.log(message);
+        }
+
+        function updateSystemInfo() {
+            const isSupported = 'speechSynthesis' in window;
+            const isSpeaking = speechSynthesis.speaking;
+            const isPaused = speechSynthesis.paused;
+            const voiceCount = voices.length;
+
+            document.getElementById('systemInfo').innerHTML = `
+                <strong>Soporte de Web Speech API:</strong> ${isSupported ? '✅ Sí' : '❌ No'}<br>
+                <strong>Estado actual:</strong> ${isSpeaking ? '🔊 Hablando' : isPaused ? '⏸️ Pausado' : '🔇 Silencioso'}<br>
+                <strong>Voces disponibles:</strong> ${voiceCount}<br>
+                <strong>Navegador:</strong> ${navigator.userAgent.split(' ')[0]}<br>
+                <strong>URL:</strong> ${window.location.href}
+            `;
+        }
+
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            displayVoices();
+            log(`Cargadas ${voices.length} voces`);
+        }
+
+        function displayVoices() {
+            const voiceList = document.getElementById('voiceList');
+            if (voices.length === 0) {
+                voiceList.innerHTML = 'No hay voces disponibles';
+                return;
+            }
+
+            let html = '';
+            voices.forEach((voice, index) => {
+                html += `<div class="voice-item">
+                    <strong>${voice.name}</strong><br>
+                    Idioma: ${voice.lang} | Género: ${voice.gender || 'N/A'}<br>
+                    <button onclick="selectVoice(${index})">Seleccionar</button>
+                </div>`;
+            });
+            voiceList.innerHTML = html;
+        }
+
+        function selectVoice(index) {
+            if (voices[index]) {
+                log(`Voz seleccionada: ${voices[index].name}`);
+                alert('Voz seleccionada: ' + voices[index].name);
+            }
+        }
+
+        function speakText() {
+            const text = document.getElementById('textInput').value;
+            if (!text.trim()) {
+                alert('Por favor, escribe algún texto');
+                return;
+            }
+
+            log(`Iniciando síntesis de voz: "${text}"`);
+            
+            // Detener cualquier voz actual
+            stopSpeaking();
+
+            // Crear nueva utterance
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            
+            // Aplicar configuración
+            currentUtterance.rate = parseFloat(document.getElementById('rateSlider').value);
+            currentUtterance.volume = parseFloat(document.getElementById('volumeSlider').value);
+            currentUtterance.pitch = parseFloat(document.getElementById('pitchSlider').value);
+            currentUtterance.lang = document.getElementById('languageSelect').value;
+
+            // Eventos
+            currentUtterance.onstart = function() {
+                log('Comenzando a hablar...');
+                document.getElementById('speakBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = false;
+                updateSystemInfo();
+            };
+
+            currentUtterance.onend = function() {
+                log('Terminó de hablar');
+                document.getElementById('speakBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('resumeBtn').disabled = true;
+                currentUtterance = null;
+                updateSystemInfo();
+            };
+
+            currentUtterance.onerror = function(event) {
+                log(`Error en síntesis de voz: ${event.error}`);
+                alert('Error: ' + event.error);
+                document.getElementById('speakBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('resumeBtn').disabled = true;
+                currentUtterance = null;
+                updateSystemInfo();
+            };
+
+            // Hablar
+            speechSynthesis.speak(currentUtterance);
+            updateSystemInfo();
+        }
+
+        function stopSpeaking() {
+            speechSynthesis.cancel();
+            document.getElementById('speakBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('resumeBtn').disabled = true;
+            currentUtterance = null;
+            log('Voz detenida');
+            updateSystemInfo();
+        }
+
+        function pauseSpeaking() {
+            speechSynthesis.pause();
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('resumeBtn').disabled = false;
+            log('Voz pausada');
+            updateSystemInfo();
+        }
+
+        function resumeSpeaking() {
+            speechSynthesis.resume();
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('resumeBtn').disabled = true;
+            log('Voz reanudada');
+            updateSystemInfo();
+        }
+
+        function updateSettings() {
+            document.getElementById('rateValue').textContent = document.getElementById('rateSlider').value;
+            document.getElementById('volumeValue').textContent = document.getElementById('volumeSlider').value;
+            document.getElementById('pitchValue').textContent = document.getElementById('pitchSlider').value;
+            log('Configuración actualizada');
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Página cargada');
+            updateSystemInfo();
+            updateSettings();
+            
+            // Cargar voces inmediatamente
+            loadVoices();
+            
+            // También cargar cuando cambien las voces
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            
+            // Actualizar información cada segundo
+            setInterval(updateSystemInfo, 1000);
+            
+            log('Sistema inicializado');
+        });
+    </script>
+</body>
+</html>

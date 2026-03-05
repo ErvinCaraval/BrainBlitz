@@ -1,0 +1,315 @@
+.home-page {
+  min-height: 100vh;
+}
+
+.hero-section {
+  text-align: center;
+  padding: var(--bb-spacing-large) var(--bb-spacing-base);
+  max-width: min(90%, 900px);
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-title {
+  font-size: var(--bb-font-size-2xl);
+  font-weight: 900;
+  margin-bottom: var(--bb-spacing-base);
+  line-height: 1.2;
+  color: var(--bb-text-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(124, 58, 237, 0.25) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.18) 0%, transparent 50%);
+  z-index: -1;
+  animation: gradientFlow 15s ease infinite;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Estilos adicionales para hero-section si son necesarios */
+.hero-section-content {
+  padding: var(--bb-spacing-base);
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 4.5rem);
+  font-weight: 900;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--bb-primary-light) 0%, var(--bb-secondary) 50%, var(--bb-accent) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: var(--bb-neon-text-shadow);
+  position: relative;
+  animation: fadeIn 1s ease-out, gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.hero-title::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+  z-index: -1;
+  border-radius: 50%;
+  animation: pulse 3s infinite;
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 3rem;
+  color: var(--bb-text-secondary);
+  font-weight: 400;
+  animation: fadeIn 1s ease-out 0.3s both;
+}
+
+.auth-actions, .user-actions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeIn 1s ease-out 0.6s both;
+}
+
+.features-section {
+  padding: 100px 20px;
+  background: linear-gradient(to bottom, 
+    rgba(124, 58, 237, 0.05),
+    rgba(245, 158, 11, 0.05),
+    rgba(16, 185, 129, 0.05)
+  );
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--bb-border);
+  position: relative;
+  clip-path: polygon(0 0, 100% 3%, 100% 97%, 0 100%);
+}
+
+.features-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bb-gradient-primary);
+}
+
+.features-section h2 {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 4rem;
+  background: var(--bb-gradient-secondary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--bb-gradient-surface);
+  padding: 3rem 2rem;
+  border-radius: 20px;
+  text-align: center;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--bb-border);
+  transition: var(--bb-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.6s;
+}
+
+.feature-card:hover::before {
+  left: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--bb-primary);
+  box-shadow: var(--bb-shadow-xl);
+}
+
+.feature-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.feature-card h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--bb-text-primary);
+}
+
+.feature-card p {
+  color: var(--bb-text-secondary);
+  line-height: 1.7;
+  font-size: 1.1rem;
+}
+
+/* Floating elements animation */
+.hero-section::after {
+  content: '⚡';
+  position: absolute;
+  top: 20%;
+  right: 10%;
+  font-size: 3rem;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(10deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 48px 8px 32px;
+    max-width: 100vw;
+  }
+  .hero-title {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+  }
+  .hero-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+  }
+  .auth-actions, .user-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  .features-section {
+    padding: 32px 8px;
+    border-radius: 0;
+  }
+  .features-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    max-width: 100vw;
+  }
+  .feature-card {
+    padding: 1.2rem 0.7rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    min-width: 0;
+    box-shadow: var(--bb-shadow-md);
+  }
+  .feature-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.7rem;
+  }
+  .feature-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  .feature-card p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.7rem;
+  }
+  .hero-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+  }
+  .features-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+  }
+  .feature-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .feature-card h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+  }
+  .feature-card {
+    padding: 0.7rem 0.3rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Performance optimizations */
+.hero-title,
+.features-section h2 {
+  will-change: transform;
+}
+
+.feature-card {
+  will-change: transform, box-shadow;
+}

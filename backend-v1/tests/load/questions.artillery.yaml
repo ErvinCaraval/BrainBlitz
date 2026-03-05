@@ -1,0 +1,28 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Ramp-up"
+    - duration: 30
+      arrivalRate: 50
+      name: "Spike"
+    - duration: 120
+      arrivalRate: 20
+      name: "Sustained"
+    - duration: 30
+      arrivalRate: 100
+      name: "Stress"
+scenarios:
+  - name: "Get All Questions"
+    flow:
+      - get:
+          url: "/api/questions"
+          expect:
+            - statusCode: 200
+            - contentType: json
+    ensure:
+      - p95: 1000
+      - p99: 2000
+      - maxErrorRate: 0.01
+      - minThroughput: 10

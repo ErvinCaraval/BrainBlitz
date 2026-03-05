@@ -1,0 +1,78 @@
+services:
+  deepface-service:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: facial-service:local
+    container_name: facial-recognition-service
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+      - USE_INMEM_CACHE=1
+      - USE_REDIS=1
+      - REDIS_URL=redis://redis:6379/0
+    restart: unless-stopped
+    
+    # Asegura que DeepFace espere a que Redis esté listo antes de iniciar
+    depends_on:
+      redis:
+        condition: service_started
+
+    # Configuración de recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    # Construimos desde la carpeta ./redis como solicitaste
+    build: ./redis
+    image: facial-service-redis:local
+    container_name: facial-service-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    
+    # Healthcheck para Redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  redis-data:
+    driver: local

@@ -1,0 +1,146 @@
+services:
+  ## -----------------------------------------------------------
+  ## Redis: almacenamiento para embeddings faciales
+  ## -----------------------------------------------------------
+  facial-service-redis:
+    image: ervincaravaliibarra/facial-service-redis:latest
+    container_name: facial-service-redis-prod
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - app-network
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ## -----------------------------------------------------------
+  ## Servicio de reconocimiento facial
+  ## -----------------------------------------------------------
+  facial-recognition-service:
+    image: ervincaravaliibarra/facial-service:latest
+    container_name: facial-recognition-service-prod
+    ports:
+      - "5001:5001"
+    environment:
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: "1"
+      USE_REDIS: "1"
+      REDIS_URL: redis://facial-service-redis:6379/0
+      CACHE_MAX_SIZE: 1000
+      CACHE_TTL_SECONDS: 3600
+      MAX_WORKERS: 3
+      LOG_LEVEL: INFO
+    depends_on:
+      facial-service-redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ## -----------------------------------------------------------
+  ## Backend Node.js
+  ## -----------------------------------------------------------
+  backend-api:
+    image: ervincaravaliibarra/backend-v1:latest
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DEEPFACE_SERVICE_URL: http://facial-recognition-service:5001
+      REDIS_URL: redis://facial-service-redis:6379/0
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      CORS_ORIGIN: http://localhost,http://localhost:80,http://frontend:80
+      AZURE_CV_API_KEY: ${AZURE_CV_API_KEY}
+      AZURE_CV_ENDPOINT: ${AZURE_CV_ENDPOINT}
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_MODEL: ${GROQ_MODEL}
+      ASSEMBLYAI_API_KEY: ${ASSEMBLYAI_API_KEY}
+      AZURE_API_KEY: ${AZURE_API_KEY}
+      AZURE_ENDPOINT: ${AZURE_ENDPOINT}
+      AZURE_TTS_REGION: ${AZURE_TTS_REGION}
+    depends_on:
+      facial-recognition-service:
+        condition: service_healthy
+    volumes:
+      - ../backend-v1/.env:/app/.env:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))\""]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ## -----------------------------------------------------------
+  ## Frontend (Vite + Nginx)
+  ## -----------------------------------------------------------
+  frontend:
+    image: ervincaravaliibarra/frontend-v2:latest
+    ports:
+      - "80:80"
+    environment:
+      VITE_API_URL: http://backend-api:5000
+      VITE_SOCKET_URL: http://backend-api:5000
+    depends_on:
+      backend-api:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+## -----------------------------------------------------------
+## Volúmenes
+## -----------------------------------------------------------
+volumes:
+  redis_data:
+    driver: local
+
+## -----------------------------------------------------------
+## Red
+## -----------------------------------------------------------
+networks:
+  app-network:
+    driver: bridge

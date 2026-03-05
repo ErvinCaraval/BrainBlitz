@@ -1,0 +1,640 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+
+\geometry{margin=2.5cm}
+
+% Configuración de colores para código
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+% Configuración de encabezadoss
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Informe de Desarrollo Asistido por IA}
+\fancyhead[R]{Ervin Caravali Ibarra - 1925648}
+\fancyfoot[C]{\thepage}
+
+% Configuración de títulos
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+\title{\textbf{Desarrollo de Software Asistido por Inteligencia Artificial:\\
+Análisis de la Colaboración Humano-IA en el Proyecto BrainBlitz}}
+\author{Ervin Caravali Ibarra\\
+Código: 1925648\\
+Universidad del Valle\\
+Escuela de Ingeniería de Sistemas y Computación\\
+\\
+\textbf{Repositorio del Proyecto:} \url{https://github.com/ErvinCaraval/frontend-v2}\\
+\textbf{Acceso al Código Fuente:} \href{https://github.com/ErvinCaraval/frontend-v2}{\texttt{github.com/ErvinCaraval/frontend-v2}}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introducción}
+
+El desarrollo de software ha experimentado una transformación significativa con la integración de herramientas de Inteligencia Artificial (IA) como asistentes de programación. Este informe documenta el proceso de desarrollo del proyecto \textbf{BrainBlitz}, una aplicación web de preguntas y respuestas desarrollada con React y Vite, donde se implementó una metodología de colaboración entre el desarrollador humano y la IA (específicamente Cursor) para optimizar la eficiencia y calidad del código.
+
+El objetivo principal de este proyecto fue crear una plataforma interactiva de juegos de preguntas que permitiera a los usuarios generar contenido tanto manualmente como mediante IA, implementando funcionalidades avanzadas de autenticación, gestión de partidas en tiempo real y una interfaz de usuario moderna y responsiva.
+
+La importancia del uso de IA como apoyo en el desarrollo radica en la capacidad de acelerar procesos de codificación, mejorar la calidad del código mediante sugerencias automatizadas, y facilitar la implementación de patrones de diseño y mejores prácticas. En este contexto, la IA actuó como un colaborador inteligente que complementó la creatividad y experiencia del desarrollador humano.
+
+\subsection{Acceso al Repositorio del Proyecto}
+
+El código fuente completo del proyecto BrainBlitz está disponible públicamente en el repositorio de GitHub. Los lectores pueden acceder a toda la implementación, documentación técnica y el historial de desarrollo que documenta la colaboración humano-IA descrita en este informe a través del siguiente enlace:
+
+\begin{center}
+\fbox{\parbox{0.8\textwidth}{
+\textbf{Repositorio Principal:} \url{https://github.com/ErvinCaraval/frontend-v2}\\
+\textbf{Descripción:} Frontend del proyecto BrainBlitz - Aplicación web de preguntas y respuestas desarrollada con React, Vite y TailwindCSS\\
+\textbf{Tecnologías:} React, Vite, TailwindCSS, Firebase, Socket.IO, Playwright, Vitest\\
+\textbf{Estado:} Activo - Desarrollo continuo con colaboración humano-IA
+}}
+\end{center}
+
+\section{Metodología}
+
+La metodología empleada en este proyecto se basó en el uso sistemático de \textit{prompts} de ingeniería de prompts para guiar las interacciones con la IA. Los prompts fueron diseñados siguiendo principios de ingeniería de prompts que permitieran obtener respuestas precisas y contextualmente relevantes.
+
+\subsection{Justificación del Uso del Inglés en los Prompts}
+
+Todos los prompts utilizados en este proyecto fueron escritos en inglés, siguiendo una decisión estratégica fundamentada en las siguientes razones:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento del modelo}: Los modelos de IA, incluyendo los utilizados por Cursor, han sido entrenados principalmente en inglés técnico, lo que resulta en una mejor comprensión y precisión cuando las instrucciones se proporcionan en este idioma.
+    \item \textbf{Consistencia}: El uso del inglés garantiza respuestas más consistentes y predecibles, reduciendo la variabilidad en las interpretaciones del modelo.
+    \item \textbf{Precisión técnica}: Los términos técnicos y conceptos de programación tienen definiciones más precisas en inglés, lo que mejora la calidad de las sugerencias de código.
+    \item \textbf{Mejores prácticas}: La documentación técnica y las mejores prácticas en desarrollo de software están predominantemente en inglés, facilitando la alineación con estándares internacionales.
+\end{itemize}
+
+\subsection{Proceso de Colaboración}
+
+El proceso de desarrollo siguió un flujo iterativo donde:
+
+\begin{enumerate}
+    \item El desarrollador humano identificaba una necesidad específica o funcionalidad a implementar
+    \item Se diseñaba un prompt estructurado en inglés con contexto, instrucciones claras y restricciones específicas
+    \item La IA procesaba el prompt y generaba código, sugerencias o implementaciones
+    \item El desarrollador humano revisaba, refinaba y adaptaba las propuestas de la IA
+    \item Se documentaba el proceso y los resultados obtenidos
+\end{enumerate}
+
+\section{Desarrollo}
+
+\subsection{Tareas Realizadas por el Estudiante (Ervin Caravali Ibarra)}
+
+Como desarrollador principal del proyecto, las responsabilidades incluyeron:
+
+\begin{itemize}
+    \item \textbf{Arquitectura del sistema}: Diseño de la estructura general del proyecto, definición de componentes y organización del código
+    \item \textbf{Configuración del entorno}: Establecimiento de las herramientas de desarrollo (Vite, React, TailwindCSS, Firebase)
+    \item \textbf{Diseño de prompts}: Creación de prompts estructurados y específicos para guiar las interacciones con la IA
+    \item \textbf{Revisión y refinamiento}: Evaluación crítica de las propuestas de la IA y adaptación según los requerimientos del proyecto
+    \item \textbf{Integración de funcionalidades}: Ensamblaje de componentes y funcionalidades generadas por la IA en un sistema cohesivo
+    \item \textbf{Testing y calidad}: Implementación de pruebas unitarias, E2E y de accesibilidad
+    \item \textbf{Documentación}: Creación de documentación técnica y planes de pruebas
+\end{itemize}
+
+\subsection{Tareas Realizadas por la IA}
+
+La IA (Cursor) contribuyó significativamente en las siguientes áreas:
+
+\begin{itemize}
+    \item \textbf{Generación de código}: Creación de componentes React, hooks personalizados y lógica de negocio
+    \item \textbf{Implementación de UI/UX}: Desarrollo de interfaces responsivas usando TailwindCSS
+    \item \textbf{Optimización de rendimiento}: Sugerencias para mejorar la carga y renderizado de componentes
+    \item \textbf{Implementación de patrones}: Aplicación de patrones de diseño como Context API, custom hooks y componentes reutilizables
+    \item \textbf{Configuración de herramientas}: Setup de configuraciones para testing, linting y CI/CD
+    \item \textbf{Mejoras de accesibilidad}: Implementación de características a11y y mejores prácticas de UX
+\end{itemize}
+
+\section{Documentación de Prompts}
+
+A continuación se presenta el análisis detallado de cada prompt utilizado en el proyecto, extraído del archivo \texttt{PROMPTS-ENGINEERING.md}:
+
+\subsection{Prompt 1: Mejora de UI/UX con React + Tailwind}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Improve UI/UX with React + Tailwind (All views)
+- Role: user
+- Goal: Analyze and implement visual, responsive, and accessible improvements across Dashboard, Game, Auth, Lobby, Summary, Admin, Home, Profile; refactor with reusable components.
+- Constraints: Use `tailwind.config.js`. Apply edits directly. Document changes. Start with Dashboard.
+- Acceptance: Modern, responsive, accessible UI; reusable components; no broken flows.
+- Tasks:
+  - Create primitives: Button, Input, Card, Alert, Section, Modal, Skeleton, Spinner.
+  - Refactor views; remove legacy CSS imports in refactored files.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de modernizar la interfaz de usuario de todas las vistas de la aplicación, implementando un sistema de diseño consistente y componentes reutilizables.
+    \item \textbf{Instrucción}: Analizar e implementar mejoras visuales, responsivas y accesibles en todas las vistas, refactorizando con componentes reutilizables.
+    \item \textbf{Restricciones}: Utilizar la configuración de TailwindCSS existente, aplicar cambios directamente, documentar modificaciones, comenzar con el Dashboard.
+    \item \textbf{Ejemplo}: Creación de componentes primitivos como Button, Input, Card, etc.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{tailwind.config.js}
+    \item \texttt{src/components/ui/} (todos los componentes primitivos)
+    \item \texttt{src/pages/} (todas las páginas principales)
+    \item \texttt{src/components/} (componentes principales)
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Sistema de componentes UI reutilizables
+    \item Interfaz responsiva y moderna
+    \item Mejoras de accesibilidad
+    \item Eliminación de CSS legacy
+\end{itemize}
+
+\subsection{Prompt 2: Mejora de Experiencia Móvil}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Enhance mobile experience (navbar, modals, tap targets)
+- Role: user
+- Goal: Ensure great smartphone UX; fix button hit targets; prevent horizontal overflow; improve navbar and modal behavior.
+- Constraints: Do not break functionality; preserve accessibility.
+- Acceptance: Smooth mobile navigation and modals; consistent focus ring; no overflow.
+- Tasks: Navbar mobile drawer with aria-expanded, larger tap targets; Modal with body scroll lock, sticky header, `max-h` and internal scroll; remove tap highlight; safe-area utilities.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de optimizar la experiencia de usuario en dispositivos móviles, específicamente en navegación y modales.
+    \item \textbf{Instrucción}: Asegurar una excelente UX en smartphones, corregir objetivos táctiles, prevenir desbordamiento horizontal, mejorar comportamiento de navbar y modales.
+    \item \textbf{Restricciones}: No romper funcionalidad existente, preservar accesibilidad.
+    \item \textbf{Ejemplo}: Implementación de drawer móvil con aria-expanded, objetivos táctiles más grandes, bloqueo de scroll del body en modales.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{src/components/Navbar.jsx}
+    \item \texttt{src/components/ui/Modal.jsx}
+    \item \texttt{src/styles/tailwind.css}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Navegación móvil optimizada con drawer
+    \item Modales con bloqueo de scroll y headers pegajosos
+    \item Objetivos táctiles accesibles (≥48px)
+    \item Utilidades safe-area para dispositivos con notch
+\end{itemize}
+
+\subsection{Prompt 3: Mejora de UX en Formularios de Preguntas}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Improve AI/Manual Questions UX (mobile numeric input)
+- Role: user
+- Goal: Make AI/Manual question generation forms mobile-first, with clear states and accessible focus; simplify numeric input.
+- Constraints: Keep current API flows intact.
+- Acceptance: Clean forms; reliable mobile numeric input; clear loading/error feedback.
+- Tasks: Stepper initially + Spinner; then switch to manual-only numeric input with `inputMode="numeric"` and `pattern` filtering; empty by default; validations on blur; show helper text.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de mejorar la experiencia de usuario en los formularios de generación de preguntas, especialmente en dispositivos móviles.
+    \item \textbf{Instrucción}: Hacer los formularios mobile-first, con estados claros y focus accesible, simplificar entrada numérica.
+    \item \textbf{Restricciones}: Mantener los flujos de API actuales intactos.
+    \item \textbf{Ejemplo}: Implementación de inputMode="numeric" y pattern filtering para entrada numérica confiable en móviles.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{src/components/AIQuestionGenerator.jsx}
+    \item \texttt{src/components/ui/Spinner.jsx}
+    \item \texttt{src/components/ManualQuestionForm.jsx}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Formularios optimizados para móviles
+    \item Entrada numérica confiable con inputMode="numeric"
+    \item Estados de carga y error claros
+    \item Validaciones en blur con texto de ayuda
+\end{itemize}
+
+\subsection{Prompt 4: Pulimiento del Flujo de Juego}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Game flow polishing (Lobby, Game, Summary)
+- Role: user
+- Goal: Organize question layout, ranking, and timer; add subtle animations; improve readability.
+- Constraints: Socket flows must remain stable.
+- Acceptance: Left column: question + options; right: ranking; timer aligned; animations for lists and options; stacked options on small screens.
+- Tasks: framer-motion in public games grid, lobby players list, question options; two-column options on `sm:`; result highlighting (correct/incorrect).
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de mejorar la experiencia visual y de usabilidad en las pantallas de juego (Lobby, Game, Summary).
+    \item \textbf{Instrucción}: Organizar layout de preguntas, ranking y timer, agregar animaciones sutiles, mejorar legibilidad.
+    \item \textbf{Restricciones}: Los flujos de socket deben permanecer estables.
+    \item \textbf{Ejemplo}: Implementación de framer-motion para animaciones, layout de dos columnas en pantallas pequeñas, highlighting de resultados.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{src/pages/GameLobbyPage.jsx}
+    \item \texttt{src/pages/GamePage.jsx}
+    \item \texttt{src/pages/GameSummaryPage.jsx}
+    \item \texttt{src/components/Question.jsx}
+    \item \texttt{src/components/Ranking.jsx}
+    \item \texttt{src/components/Timer.jsx}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Layout organizado con columnas izquierda y derecha
+    \item Animaciones sutiles con framer-motion
+    \item Opciones apiladas en pantallas pequeñas
+    \item Highlighting de respuestas correctas/incorrectas
+\end{itemize}
+
+\subsection{Prompt 5: Rendimiento y Feedback}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Performance and feedback (skeletons/spinners overlays on mobile)
+- Role: user
+- Goal: Add skeletons and mobile overlays while loading or connecting.
+- Constraints: Minimal perf impact; respect reduced motion.
+- Acceptance: Mobile overlays for connecting/creating/generating; skeletons for grids.
+- Tasks: LoadingOverlay for Dashboard (creating), Lobby (connecting), AI generator (loading); skeleton grid in Dashboard and Lobby list placeholders; shimmer styling.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de mejorar la percepción de rendimiento y proporcionar feedback visual durante estados de carga.
+    \item \textbf{Instrucción}: Agregar skeletons y overlays móviles durante carga o conexión.
+    \item \textbf{Restricciones}: Impacto mínimo en rendimiento, respetar reduced motion.
+    \item \textbf{Ejemplo}: LoadingOverlay para Dashboard, Lobby y generador AI; skeleton grid para placeholders; styling shimmer.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{src/components/ui/LoadingOverlay.jsx}
+    \item \texttt{src/components/ui/Skeleton.jsx}
+    \item \texttt{src/theme.css}
+    \item \texttt{src/pages/DashboardPage.jsx}
+    \item \texttt{src/pages/GameLobbyPage.jsx}
+    \item \texttt{src/components/AIQuestionGenerator.jsx}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Overlays de carga para estados de conexión
+    \item Skeletons para placeholders de grids
+    \item Styling shimmer para efectos de carga
+    \item Respeto por preferencias de reduced motion
+\end{itemize}
+
+\subsection{Prompt 6: Conexión Robusta de Socket}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Robust socket connect + timeouts (Create Game)
+- Role: user
+- Goal: Ensure create-game button never "se queda parado".
+- Constraints: Maintain current server events.
+- Acceptance: Connects once, uses `once` listeners, and applies a 10s fallback timeout; opens AI generator if missing questions.
+- Tasks: `connectSocket()` helper; `once('gameCreated')` and `once('error')`; timeout clearing.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Problema de UX donde el botón de crear juego se quedaba "colgado" sin feedback al usuario.
+    \item \textbf{Instrucción}: Asegurar que el botón de crear juego nunca se quede parado, implementando timeouts y manejo robusto de conexiones.
+    \item \textbf{Restricciones}: Mantener los eventos del servidor actuales.
+    \item \textbf{Ejemplo}: Helper connectSocket(), listeners once(), timeout de 10s, apertura del generador AI si faltan preguntas.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{src/pages/DashboardPage.jsx}
+    \item \texttt{src/services/socket.js}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Conexión robusta de socket con timeouts
+    \item Listeners únicos para evitar duplicación
+    \item Timeout de fallback de 10 segundos
+    \item Apertura automática del generador AI si faltan preguntas
+\end{itemize}
+
+\subsection{Prompt 7: Tests y Cobertura}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+Tests and Coverage (95%)
+- Role: user
+- Goal: Increase tests and enforce 95% coverage.
+- Constraints: Use Vitest JS DOM; keep CI stable.
+- Acceptance: Coverage thresholds enforced; component tests added; plan updated.
+- Tasks: Configure coverage in vitest; add tests for AIQuestionGenerator, Question, Navbar; update QA plan.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de aumentar la cobertura de pruebas y asegurar calidad del código.
+    \item \textbf{Instrucción}: Aumentar tests y hacer cumplir 95\% de cobertura.
+    \item \textbf{Restricciones}: Usar Vitest JS DOM, mantener CI estable.
+    \item \textbf{Ejemplo}: Configuración de cobertura en vitest, tests para AIQuestionGenerator, Question, Navbar.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{vitest.config.js}
+    \item \texttt{src/__tests__/} (nuevos archivos de test)
+    \item \texttt{QA-TEST-PLAN.md}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Configuración de cobertura de 95\%
+    \item Tests unitarios para componentes clave
+    \item Plan de QA actualizado
+    \item Integración con CI estable
+\end{itemize}
+
+\subsection{Prompt 8: Generación de Workflow CI/CD}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+You are a DevOps Engineer specialized in CI/CD for frontend projects built with Vite + React. Your task is to generate a complete workflow using GitHub Actions that:
+
+1. Runs automatically whenever there is a push or pull request to the `main` branch.
+2. Executes all the tests specified in the frontend Vite + React test plan, including:
+   - Functional tests across all views.
+   - UI/UX tests across all views.
+   - Performance tests.
+   - Accessibility (a11y) tests.
+   - Regression tests.
+   - End-to-End (E2E) tests.
+   - Visual Regression Testing.
+3. Only if all tests pass, it should then:
+   - Push the approved changes to GitHub.
+   - Automatically deploy the project to Vercel.
+4. The workflow must include:
+   - Installation of required dependencies.
+   - Execution of unit and integration tests.
+   - Execution of E2E tests.
+   - Execution of visual and accessibility tests.
+   - Verification of Lighthouse results or equivalent tools.
+   - A condition ensuring that deployment only happens if all tests pass.
+5. Deliver the final YAML file ready to be used as a workflow in `.github/workflows/ci-cd.yml`.
+6. Add clear comments in the workflow to explain each step.
+
+The result must be a functional, secure, and optimized workflow for a Vite + React frontend project, following best practices for CI/CD and automated testing.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de automatizar el proceso de integración continua y despliegue continuo para el proyecto.
+    \item \textbf{Instrucción}: Generar un workflow completo de GitHub Actions que ejecute todas las pruebas y despliegue automáticamente.
+    \item \textbf{Restricciones}: Solo desplegar si todas las pruebas pasan, incluir comentarios claros, seguir mejores prácticas.
+    \item \textbf{Ejemplo}: Workflow YAML funcional, seguro y optimizado para Vite + React.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{.github/workflows/ci-cd.yml}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Workflow automatizado de CI/CD
+    \item Ejecución de todas las suites de pruebas
+    \item Despliegue automático a Vercel
+    \item Verificación de Lighthouse
+    \item Condiciones de seguridad para despliegue
+\end{itemize}
+
+\subsection{Prompt 9: Plan Completo de Pruebas}
+
+\textbf{Texto del prompt (en inglés):}
+\begin{lstlisting}[language=bash]
+You are a QA Automation Engineer specialized in frontend, particularly in projects built with Vite + React. Your task is to generate a complete and detailed test plan for an existing project, ensuring that all frontend views are evaluated. The plan must include both manual and automated tests, focusing on guaranteeing quality, performance, accessibility, functionality, and user experience.
+
+The plan must include:
+
+1. Functional Tests:
+   - Verification of navigation and routes across all views.
+   - Validation of forms and data in all views.
+   - CRUD verification if applicable.
+   - Validation of API integrations.
+   - Verification of key functionalities in each frontend view.
+
+2. UI/UX Tests:
+   - Verify responsive design on mobile, tablet, and desktop across all views.
+   - Review visual consistency (typography, colors, spacing) across all views.
+   - Validate touch interactions.
+   - Review behavior across different browsers.
+
+3. Performance Tests:
+   - Measure initial load times across all views.
+   - Evaluate performance on mobile devices and slow networks.
+   - Test optimization of images and resources.
+   - Use tools such as Google Lighthouse.
+
+4. Accessibility (a11y) Tests:
+   - Verify color contrast.
+   - Validate ARIA labels.
+   - Test keyboard navigation.
+   - Use screen readers.
+
+5. Regression Tests:
+   - Verify that new functionalities do not break existing ones in any view.
+
+6. End-to-End (E2E) Tests:
+   - Simulate complete user interaction across all views, including navigation and key processes.
+
+7. Visual Regression Testing:
+   - Compare screenshots before and after changes.
+   - Detect unwanted visual differences across all views.
+
+8. Final QA Checklist:
+   - Summary of all tests to be performed.
+   - Recommended tools.
+   - Commands to execute the tests.
+
+9. Final Delivery:
+   - A document or README with the complete test plan ready to be applied to the Vite + React project.
+   - A list of clear steps and procedures to execute each type of test across all views.
+
+Do everything in a single workflow, without asking me for intermediate confirmation. The result must be a complete plan, ready to be applied to the project, including all necessary tests to ensure quality across all frontend views.
+\end{lstlisting}
+
+\textbf{Análisis del prompt:}
+\begin{itemize}
+    \item \textbf{Contexto}: Necesidad de crear un plan de pruebas completo y detallado para asegurar la calidad del proyecto.
+    \item \textbf{Instrucción}: Generar un plan completo de pruebas que incluya pruebas manuales y automáticas, enfocándose en calidad, rendimiento, accesibilidad, funcionalidad y UX.
+    \item \textbf{Restricciones}: Evaluar todas las vistas del frontend, incluir tanto pruebas manuales como automáticas.
+    \item \textbf{Ejemplo}: Plan detallado con 9 categorías de pruebas, herramientas recomendadas, comandos de ejecución.
+\end{itemize}
+
+\textbf{Archivos afectados:}
+\begin{itemize}
+    \item \texttt{QA-TEST-PLAN.md}
+\end{itemize}
+
+\textbf{Funcionalidades implementadas:}
+\begin{itemize}
+    \item Plan completo de pruebas funcionales
+    \item Estrategia de pruebas UI/UX
+    \item Plan de pruebas de rendimiento
+    \item Estrategia de pruebas de accesibilidad
+    \item Plan de pruebas de regresión y E2E
+    \item Checklist final de QA
+\end{itemize}
+
+\section{Resultados}
+
+La colaboración entre el desarrollador humano y la IA resultó en un proyecto robusto y bien estructurado que demuestra las ventajas de la integración de herramientas de IA en el desarrollo de software. Los resultados obtenidos incluyen:
+
+\subsection{Mejoras en Productividad}
+
+\begin{itemize}
+    \item \textbf{Aceleración del desarrollo}: La IA permitió implementar funcionalidades complejas en tiempos significativamente menores
+    \item \textbf{Reducción de errores}: Las sugerencias de la IA ayudaron a prevenir errores comunes y aplicar mejores prácticas
+    \item \textbf{Consistencia de código}: Los prompts estructurados aseguraron un estilo de código consistente en todo el proyecto
+\end{itemize}
+
+\subsection{Calidad del Código}
+
+\begin{itemize}
+    \item \textbf{Arquitectura modular}: Implementación de componentes reutilizables y separación clara de responsabilidades
+    \item \textbf{Accesibilidad}: Cumplimiento de estándares WCAG con implementación de características a11y
+    \item \textbf{Rendimiento}: Optimizaciones implementadas para mejorar tiempos de carga y experiencia de usuario
+    \item \textbf{Cobertura de pruebas}: Alcanzado 95\% de cobertura de código con pruebas unitarias y E2E
+\end{itemize}
+
+\subsection{Funcionalidades Implementadas}
+
+\begin{itemize}
+    \item \textbf{Sistema de autenticación}: Integración con Firebase para manejo de usuarios
+    \item \textbf{Generación de preguntas}: Sistema dual (manual y con IA) para creación de contenido
+    \item \textbf{Juegos en tiempo real}: Implementación de WebSockets para partidas multijugador
+    \item \textbf{Interfaz responsiva}: Diseño mobile-first con TailwindCSS
+    \item \textbf{CI/CD automatizado}: Pipeline completo de integración y despliegue continuo
+\end{itemize}
+
+\subsection{Métricas de Éxito}
+
+\begin{itemize}
+    \item \textbf{Cobertura de pruebas}: 95\% de statements, functions y lines
+    \item \textbf{Accesibilidad}: Cumplimiento de estándares WCAG 2.1 AA
+    \item \textbf{Rendimiento}: Lighthouse score > 90 en todas las métricas
+    \item \textbf{Compatibilidad}: Funcionamiento en Chrome, Firefox, Safari y Edge
+\end{itemize}
+
+\section{Conclusión}
+
+Este proyecto demuestra la efectividad de la colaboración entre la creatividad humana y la potencia de la Inteligencia Artificial en el desarrollo de software. La metodología de ingeniería de prompts implementada permitió aprovechar las capacidades de la IA de manera estructurada y eficiente, resultando en un producto de alta calidad técnica y de usuario.
+
+\subsection{Lecciones Aprendidas}
+
+\begin{enumerate}
+    \item \textbf{Importancia del diseño de prompts}: La calidad de los prompts directamente impacta la calidad de las respuestas de la IA. Prompts bien estructurados con contexto claro, instrucciones específicas y restricciones bien definidas producen resultados superiores.
+    
+    \item \textbf{Complementariedad humano-IA}: La IA no reemplaza al desarrollador humano, sino que lo complementa. La creatividad, experiencia y juicio crítico del desarrollador son esenciales para guiar y refinar las propuestas de la IA.
+    
+    \item \textbf{Ventajas del inglés en prompts técnicos}: El uso del inglés en prompts técnicos mejora significativamente la precisión y consistencia de las respuestas de la IA, debido al entrenamiento predominante en este idioma.
+    
+    \item \textbf{Iteración y refinamiento}: El proceso de desarrollo asistido por IA es iterativo. Las propuestas iniciales de la IA requieren revisión, refinamiento y adaptación por parte del desarrollador humano.
+\end{enumerate}
+
+\subsection{Impacto en el Desarrollo de Software}
+
+La integración de IA en el desarrollo de software representa un cambio paradigmático que:
+
+\begin{itemize}
+    \item \textbf{Acelera la innovación}: Permite a los desarrolladores enfocarse en problemas de alto nivel mientras la IA maneja implementaciones de bajo nivel
+    \item \textbf{Democratiza el desarrollo}: Facilita el acceso a mejores prácticas y patrones de diseño para desarrolladores de todos los niveles
+    \item \textbf{Mejora la calidad}: Reduce errores comunes y asegura la aplicación consistente de estándares de código
+    \item \textbf{Optimiza recursos}: Permite entregar productos de mayor calidad en menos tiempo
+\end{itemize}
+
+\subsection{Recomendaciones Futuras}
+
+Para futuros proyectos de desarrollo asistido por IA, se recomienda:
+
+\begin{enumerate}
+    \item \textbf{Invertir en diseño de prompts}: Dedicar tiempo a crear prompts bien estructurados y específicos
+    \item \textbf{Mantener documentación detallada}: Registrar todos los prompts utilizados y sus resultados para aprendizaje continuo
+    \item \textbf{Implementar revisiones críticas}: Siempre revisar y validar las propuestas de la IA antes de implementarlas
+    \item \textbf{Establecer métricas de calidad}: Definir criterios claros para evaluar la efectividad de la colaboración humano-IA
+\end{enumerate}
+
+En conclusión, este proyecto evidencia que la colaboración efectiva entre desarrolladores humanos e IA no solo es posible, sino que puede resultar en productos de software superiores. La clave está en entender que la IA es una herramienta poderosa que, cuando se usa correctamente, puede amplificar las capacidades humanas y acelerar la innovación en el desarrollo de software.
+
+El futuro del desarrollo de software será cada vez más colaborativo, donde la creatividad y experiencia humana se combinen con la eficiencia y precisión de la IA para crear soluciones tecnológicas más robustas, accesibles y centradas en el usuario.
+
+\subsection{Acceso al Código Fuente}
+
+Para los lectores interesados en examinar la implementación completa del proyecto BrainBlitz y la documentación técnica detallada, el repositorio está disponible en:
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{
+\textbf{Enlace Directo al Repositorio:} \url{https://github.com/ErvinCaraval/frontend-v2}\\
+\textbf{Documentación Técnica:} Disponible en el directorio raíz del repositorio\\
+\textbf{Historial de Desarrollo:} Accesible a través del historial de commits de Git\\
+\textbf{Issues y Discusiones:} Disponibles en la sección de Issues del repositorio
+}}
+\end{center}
+
+\end{document}

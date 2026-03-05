@@ -1,0 +1,41 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Ramp-up"
+    - duration: 30
+      arrivalRate: 50
+      name: "Spike"
+    - duration: 120
+      arrivalRate: 20
+      name: "Sustained"
+    - duration: 30
+      arrivalRate: 100
+      name: "Stress"
+  payload:
+    - path: "payloads/topics.csv"
+      fields:
+        - topic
+scenarios:
+  - name: "Generate Questions"
+    flow:
+      - post:
+          url: "/api/ai/generate-questions"
+          json:
+            topic: "{{ topic }}"
+            difficulty: "medium"
+            count: 5
+            useAI: true
+          capture:
+            - json: "$.questions"
+              as: "questions"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: questions
+    ensure:
+      - p95: 1000
+      - p99: 2000
+      - maxErrorRate: 0.01
+      - minThroughput: 10

@@ -1,0 +1,59 @@
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timer-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.timer.normal .timer-circle {
+  background: rgba(76, 175, 80, 0.2);
+  border: 3px solid #4caf50;
+}
+
+.timer.warning .timer-circle {
+  background: rgba(255, 193, 7, 0.2);
+  border: 3px solid #ffc107;
+  animation: warningPulse 1s infinite;
+}
+
+.timer.critical .timer-circle {
+  background: rgba(244, 67, 54, 0.2);
+  border: 3px solid #f44336;
+  animation: criticalPulse 0.5s infinite;
+}
+
+.timer-text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.timer-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes warningPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes criticalPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+

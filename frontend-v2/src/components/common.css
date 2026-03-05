@@ -1,0 +1,98 @@
+.loading-indicator {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto;
+}
+
+.loading-indicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--primary-color, #7c3aed);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.form-group {
+  transition: opacity 0.3s ease;
+}
+
+.form-group.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.form-input, .form-select {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: var(--primary-color, #7c3aed);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+}
+
+.error-message {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #ef4444;
+  margin: 8px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.success-message {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #22c55e;
+  margin: 8px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+}
+
+button:active::after {
+  width: 200%;
+  height: 200%;
+  opacity: 1;
+  transition: width 0s, height 0s;
+}

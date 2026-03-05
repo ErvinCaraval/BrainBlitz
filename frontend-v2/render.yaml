@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: my-app
+    env: static
+    staticPublishPath: frontend-v2/dist
+    buildCommand: cd frontend-v2 && npm run build:render
+    # Environment variables for production
+    envVars:
+      - key: VITE_API_URL
+        value: https://proyecto-2-olvb.onrender.com
+      - key: VITE_SOCKET_URL
+        value: https://proyecto-2-olvb.onrender.com

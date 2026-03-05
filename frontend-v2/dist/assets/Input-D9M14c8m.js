@@ -1,0 +1,2 @@
+import{j as e}from"./index-B7SNj0r6.js";import{c as t}from"./clsx-B-dksMZM.js";const i="block w-full rounded-xl border-2 border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/50 backdrop-blur-md transition-all duration-250 focus:border-bb-primary focus:ring-2 focus:ring-bb-primary/30 focus:outline-none hover:border-white/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-white/10";function d({className:r="",...o}){return e.jsx("input",{className:t(i,r),...o})}export{d as I};
+//# sourceMappingURL=Input-D9M14c8m.js.map
